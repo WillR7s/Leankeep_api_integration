@@ -419,6 +419,35 @@ std::string obterEquipamentos(const std::string& token)
 
 
 // ============================================================
+// FUNÇÃO: encontrarEquipamentoPorTag
+// Procura um equipamento pelo campo "tag"
+// ============================================================
+
+json encontrarEquipamentoPorTag(
+    const json& equipamentos,
+    const std::string& tagProcurada
+)
+{
+    for (const auto& equipamento : equipamentos)
+    {
+        if (!equipamento.contains("tag"))
+        {
+            continue;
+        }
+
+        std::string tag = equipamento["tag"];
+
+        if (tag == tagProcurada)
+        {
+            return equipamento;
+        }
+    }
+
+    return json();
+}
+
+
+// ============================================================
 // FUNÇÃO PRINCIPAL
 // ============================================================
 
@@ -472,6 +501,7 @@ int main()
 
 
         // Verifica se realmente recebemos uma lista
+
         if (!equipamentos.is_array())
         {
             std::cout << "Erro: a resposta nao e uma lista.\n";
@@ -486,62 +516,59 @@ int main()
 
 
         // ----------------------------------------------------
-        // 4. Percorre os equipamentos
+        // 4. Procura um equipamento pela tag
         // ----------------------------------------------------
 
-        std::cout << "\n=====================================\n";
-        std::cout << "         EQUIPAMENTOS\n";
-        std::cout << "=====================================\n";
+        std::string tagProcurada = "MSLH_SERVER";
+
+        std::cout << "\nProcurando equipamento...\n";
+
+        std::cout << "Tag procurada: "
+                  << tagProcurada
+                  << "\n";
 
 
-        for (const auto& equipamento : equipamentos)
+        json equipamentoEncontrado =
+            encontrarEquipamentoPorTag(
+                equipamentos,
+                tagProcurada
+            );
+
+
+        if (equipamentoEncontrado.empty())
         {
-            std::cout << "\n";
+            std::cout << "\nEquipamento nao encontrado.\n";
+        }
+        else
+        {
+            std::cout << "\n=====================================\n";
+            std::cout << "       EQUIPAMENTO ENCONTRADO\n";
+            std::cout << "=====================================\n";
 
 
-            // ID do equipamento
-            if (equipamento.contains("equipamento"))
-            {
-                std::cout << "ID: "
-                          << equipamento["equipamento"]
-                          << "\n";
-            }
+            std::cout << "ID: "
+                      << equipamentoEncontrado["equipamento"]
+                      << "\n";
 
 
-            // Nome
-            if (equipamento.contains("nome"))
-            {
-                std::cout << "Nome: "
-                          << equipamento["nome"]
-                          << "\n";
-            }
+            std::cout << "Nome: "
+                      << equipamentoEncontrado["nome"]
+                      << "\n";
 
 
-            // Tag
-            if (equipamento.contains("tag"))
-            {
-                std::cout << "Tag: "
-                          << equipamento["tag"]
-                          << "\n";
-            }
+            std::cout << "Tag: "
+                      << equipamentoEncontrado["tag"]
+                      << "\n";
 
 
-            // Site
-            if (equipamento.contains("site"))
-            {
-                std::cout << "Site ID: "
-                          << equipamento["site"]
-                          << "\n";
-            }
+            std::cout << "Site ID: "
+                      << equipamentoEncontrado["site"]
+                      << "\n";
 
 
-            // Área
-            if (equipamento.contains("area"))
-            {
-                std::cout << "Area ID: "
-                          << equipamento["area"]
-                          << "\n";
-            }
+            std::cout << "Area ID: "
+                      << equipamentoEncontrado["area"]
+                      << "\n";
 
 
             std::cout << "-------------------------------------\n";
