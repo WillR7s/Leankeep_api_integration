@@ -10,7 +10,7 @@ using json = nlohmann::json;
 
 // ============================================================
 // FUNÇÃO: escreverResposta
-// Recebe os dados enviados pelo servidor e coloca em uma string
+// Recebe os dados enviados pelo servidor
 // ============================================================
 
 size_t escreverResposta(
@@ -49,12 +49,14 @@ std::string obterToken()
     }
 
 
-    // Pega login e senha do secret.cpp
     const char* login = getLeankeepLogin();
     const char* senha = getLeankeepPassword();
 
 
-    // Cria o formulário multipart
+    // --------------------------------------------------------
+    // Cria o formulario
+    // --------------------------------------------------------
+
     curl_mime* formulario = curl_mime_init(curl);
 
     if (!formulario)
@@ -67,10 +69,7 @@ std::string obterToken()
     }
 
 
-    // --------------------------------------------------------
-    // Campo Login
-    // --------------------------------------------------------
-
+    // Login
     curl_mimepart* campoLogin = curl_mime_addpart(formulario);
 
     curl_mime_name(
@@ -85,10 +84,7 @@ std::string obterToken()
     );
 
 
-    // --------------------------------------------------------
-    // Campo Password
-    // --------------------------------------------------------
-
+    // Password
     curl_mimepart* campoSenha = curl_mime_addpart(formulario);
 
     curl_mime_name(
@@ -103,10 +99,7 @@ std::string obterToken()
     );
 
 
-    // --------------------------------------------------------
-    // Campo Plataform
-    // --------------------------------------------------------
-
+    // Plataforma
     curl_mimepart* campoPlataform = curl_mime_addpart(formulario);
 
     curl_mime_name(
@@ -121,10 +114,7 @@ std::string obterToken()
     );
 
 
-    // --------------------------------------------------------
-    // Campo ExpireCurrentSession
-    // --------------------------------------------------------
-
+    // ExpireCurrentSession
     curl_mimepart* campoExpire = curl_mime_addpart(formulario);
 
     curl_mime_name(
@@ -139,10 +129,7 @@ std::string obterToken()
     );
 
 
-    // --------------------------------------------------------
-    // Campo StayConnected
-    // --------------------------------------------------------
-
+    // StayConnected
     curl_mimepart* campoStayConnected = curl_mime_addpart(formulario);
 
     curl_mime_name(
@@ -158,7 +145,7 @@ std::string obterToken()
 
 
     // --------------------------------------------------------
-    // Configura a requisição
+    // Configura requisicao
     // --------------------------------------------------------
 
     curl_easy_setopt(
@@ -174,7 +161,6 @@ std::string obterToken()
     );
 
 
-    // String que receberá a resposta
     std::string resposta;
 
 
@@ -192,7 +178,7 @@ std::string obterToken()
 
 
     // --------------------------------------------------------
-    // Executa o login
+    // Executa login
     // --------------------------------------------------------
 
     std::cout << "Autenticando no LeanKeep...\n";
@@ -214,7 +200,7 @@ std::string obterToken()
 
 
     // --------------------------------------------------------
-    // Verifica o status HTTP
+    // Status HTTP
     // --------------------------------------------------------
 
     long statusHTTP;
@@ -243,7 +229,7 @@ std::string obterToken()
 
 
     // --------------------------------------------------------
-    // Interpreta o JSON
+    // Interpreta JSON
     // --------------------------------------------------------
 
     try
@@ -273,22 +259,20 @@ std::string obterToken()
         }
 
 
-        // Extrai o JWT
         std::string token = dados["authToken"]["token"];
 
 
         std::cout << "JWT obtido com sucesso.\n";
+
         std::cout << "Tamanho do JWT: "
                   << token.length()
                   << " caracteres\n";
 
 
-        // Libera recursos
         curl_mime_free(formulario);
         curl_easy_cleanup(curl);
 
 
-        // Retorna o JWT para quem chamou a função
         return token;
     }
     catch (const json::parse_error& erro)
@@ -306,7 +290,7 @@ std::string obterToken()
 
 // ============================================================
 // FUNÇÃO: obterEquipamentos
-// Recebe o JWT e consulta os equipamentos ativos
+// Consulta os equipamentos ativos
 // ============================================================
 
 std::string obterEquipamentos(const std::string& token)
@@ -321,7 +305,7 @@ std::string obterEquipamentos(const std::string& token)
 
 
     // --------------------------------------------------------
-    // Monta o Header de autenticação
+    // Cria o header Authorization
     // --------------------------------------------------------
 
     struct curl_slist* headers = nullptr;
@@ -338,7 +322,7 @@ std::string obterEquipamentos(const std::string& token)
 
 
     // --------------------------------------------------------
-    // Configura a URL
+    // Configura requisicao
     // --------------------------------------------------------
 
     curl_easy_setopt(
@@ -348,7 +332,6 @@ std::string obterEquipamentos(const std::string& token)
     );
 
 
-    // Adiciona o header Authorization
     curl_easy_setopt(
         curl,
         CURLOPT_HTTPHEADER,
@@ -357,7 +340,7 @@ std::string obterEquipamentos(const std::string& token)
 
 
     // --------------------------------------------------------
-    // Onde será armazenada a resposta
+    // Recebe resposta
     // --------------------------------------------------------
 
     std::string resposta;
@@ -377,7 +360,7 @@ std::string obterEquipamentos(const std::string& token)
 
 
     // --------------------------------------------------------
-    // Executa a requisição
+    // Executa consulta
     // --------------------------------------------------------
 
     std::cout << "\nConsultando equipamentos...\n";
@@ -399,7 +382,7 @@ std::string obterEquipamentos(const std::string& token)
 
 
     // --------------------------------------------------------
-    // Verifica o status HTTP
+    // Status HTTP
     // --------------------------------------------------------
 
     long statusHTTP;
@@ -416,7 +399,17 @@ std::string obterEquipamentos(const std::string& token)
               << "\n";
 
 
-    // Libera recursos
+    if (statusHTTP != 200)
+    {
+        std::cout << "A API nao retornou os equipamentos.\n";
+
+        curl_slist_free_all(headers);
+        curl_easy_cleanup(curl);
+
+        return "";
+    }
+
+
     curl_slist_free_all(headers);
     curl_easy_cleanup(curl);
 
@@ -432,12 +425,12 @@ std::string obterEquipamentos(const std::string& token)
 int main()
 {
     std::cout << "=====================================\n";
-    std::cout << "      INTEGRACAO COM LEANKEEP\n";
+    std::cout << "       INTEGRACAO COM LEANKEEP\n";
     std::cout << "=====================================\n\n";
 
 
     // --------------------------------------------------------
-    // 1. Obtém o JWT
+    // 1. Autenticação
     // --------------------------------------------------------
 
     std::string token = obterToken();
@@ -446,12 +439,13 @@ int main()
     if (token.empty())
     {
         std::cout << "\nNao foi possivel obter o JWT.\n";
+
         return 1;
     }
 
 
     // --------------------------------------------------------
-    // 2. Usa o JWT para consultar equipamentos
+    // 2. Consulta equipamentos
     // --------------------------------------------------------
 
     std::string resposta = obterEquipamentos(token);
@@ -460,16 +454,106 @@ int main()
     if (resposta.empty())
     {
         std::cout << "\nNao foi possivel obter os equipamentos.\n";
+
         return 1;
     }
 
 
     // --------------------------------------------------------
-    // 3. Mostra a resposta da API
+    // 3. Transforma resposta em JSON
     // --------------------------------------------------------
 
-    std::cout << "\nResposta da API:\n";
-    std::cout << resposta << "\n";
+    try
+    {
+        json equipamentos = json::parse(resposta);
+
+
+        std::cout << "\nJSON dos equipamentos recebido.\n";
+
+
+        // Verifica se realmente recebemos uma lista
+        if (!equipamentos.is_array())
+        {
+            std::cout << "Erro: a resposta nao e uma lista.\n";
+
+            return 1;
+        }
+
+
+        std::cout << "Quantidade de equipamentos: "
+                  << equipamentos.size()
+                  << "\n";
+
+
+        // ----------------------------------------------------
+        // 4. Percorre os equipamentos
+        // ----------------------------------------------------
+
+        std::cout << "\n=====================================\n";
+        std::cout << "         EQUIPAMENTOS\n";
+        std::cout << "=====================================\n";
+
+
+        for (const auto& equipamento : equipamentos)
+        {
+            std::cout << "\n";
+
+
+            // ID do equipamento
+            if (equipamento.contains("equipamento"))
+            {
+                std::cout << "ID: "
+                          << equipamento["equipamento"]
+                          << "\n";
+            }
+
+
+            // Nome
+            if (equipamento.contains("nome"))
+            {
+                std::cout << "Nome: "
+                          << equipamento["nome"]
+                          << "\n";
+            }
+
+
+            // Tag
+            if (equipamento.contains("tag"))
+            {
+                std::cout << "Tag: "
+                          << equipamento["tag"]
+                          << "\n";
+            }
+
+
+            // Site
+            if (equipamento.contains("site"))
+            {
+                std::cout << "Site ID: "
+                          << equipamento["site"]
+                          << "\n";
+            }
+
+
+            // Área
+            if (equipamento.contains("area"))
+            {
+                std::cout << "Area ID: "
+                          << equipamento["area"]
+                          << "\n";
+            }
+
+
+            std::cout << "-------------------------------------\n";
+        }
+    }
+    catch (const json::parse_error& erro)
+    {
+        std::cout << "\nErro ao interpretar os equipamentos.\n";
+        std::cout << erro.what() << "\n";
+
+        return 1;
+    }
 
 
     return 0;
