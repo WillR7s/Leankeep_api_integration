@@ -644,12 +644,10 @@ json encontrarEquipamento(
     std::string textoNormalizado =
         normalizarTexto(texto);
 
-
     for (const auto& equipamento : equipamentos)
     {
         std::string tag = "";
         std::string nome = "";
-
 
         // ----------------------------------------------------
         // Obtém TAG
@@ -660,10 +658,8 @@ json encontrarEquipamento(
             equipamento["tag"].is_string()
         )
         {
-            tag =
-                equipamento["tag"];
+            tag = equipamento["tag"];
         }
-
 
         // ----------------------------------------------------
         // Obtém NOME
@@ -674,21 +670,57 @@ json encontrarEquipamento(
             equipamento["nome"].is_string()
         )
         {
-            nome =
-                equipamento["nome"];
+            nome = equipamento["nome"];
         }
-
 
         std::string tagNormalizada =
             normalizarTexto(tag);
 
-
         std::string nomeNormalizado =
             normalizarTexto(nome);
 
+        // ----------------------------------------------------
+        // Monta a identificação completa
+        //
+        // Exemplo:
+        // tag  = MSLH_SERVER
+        // nome = SERVIDOR
+        //
+        // resultado:
+        // MSLH_SERVER/SERVIDOR
+        // ----------------------------------------------------
+
+        std::string identificacaoCompleta =
+            tag + "/" + nome;
+
+        std::string identificacaoNormalizada =
+            normalizarTexto(identificacaoCompleta);
 
         // ----------------------------------------------------
-        // Procura dentro da TAG
+        // 1. Tenta encontrar pela identificação completa
+        // ----------------------------------------------------
+
+        if (
+            identificacaoNormalizada == textoNormalizado
+        )
+        {
+            return equipamento;
+        }
+
+        // ----------------------------------------------------
+        // 2. Procura o texto dentro da identificação completa
+        // ----------------------------------------------------
+
+        if (
+            identificacaoNormalizada.find(textoNormalizado)
+            != std::string::npos
+        )
+        {
+            return equipamento;
+        }
+
+        // ----------------------------------------------------
+        // 3. Procura pela TAG
         // ----------------------------------------------------
 
         if (
@@ -699,9 +731,8 @@ json encontrarEquipamento(
             return equipamento;
         }
 
-
         // ----------------------------------------------------
-        // Procura dentro do NOME
+        // 4. Procura pelo NOME
         // ----------------------------------------------------
 
         if (
@@ -712,7 +743,6 @@ json encontrarEquipamento(
             return equipamento;
         }
     }
-
 
     return json();
 }
