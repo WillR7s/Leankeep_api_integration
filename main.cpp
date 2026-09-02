@@ -1,5 +1,8 @@
 #include <iostream>
 #include <string>
+#include <vector>
+#include <limits>
+#include <cctype>
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
 
@@ -57,8 +60,11 @@ std::string obterToken()
     // Credenciais
     // --------------------------------------------------------
 
-    const char* login = getLeankeepLogin();
-    const char* senha = getLeankeepPassword();
+    const char* login =
+        getLeankeepLogin();
+
+    const char* senha =
+        getLeankeepPassword();
 
 
     // --------------------------------------------------------
@@ -217,7 +223,8 @@ std::string obterToken()
     // Status HTTP
     // --------------------------------------------------------
 
-    long statusHTTP;
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
@@ -297,7 +304,6 @@ std::string obterToken()
 
         return token;
     }
-
     catch (const json::parse_error& erro)
     {
         std::cout
@@ -306,6 +312,7 @@ std::string obterToken()
         std::cout
             << erro.what()
             << "\n";
+
 
         curl_mime_free(formulario);
         curl_easy_cleanup(curl);
@@ -324,7 +331,9 @@ std::string obterEquipamentos(
     const std::string& token
 )
 {
-    CURL* curl = curl_easy_init();
+    CURL* curl =
+        curl_easy_init();
+
 
     if (!curl)
     {
@@ -336,25 +345,29 @@ std::string obterEquipamentos(
 
 
     // --------------------------------------------------------
-    // Cria header Authorization
+    // Header Authorization
     // --------------------------------------------------------
 
-    struct curl_slist* headers = nullptr;
+    struct curl_slist* headers =
+        nullptr;
+
 
     std::string autorizacao =
         "Authorization: Bearer ";
 
+
     autorizacao += token;
 
 
-    headers = curl_slist_append(
-        headers,
-        autorizacao.c_str()
-    );
+    headers =
+        curl_slist_append(
+            headers,
+            autorizacao.c_str()
+        );
 
 
     // --------------------------------------------------------
-    // Configura requisição
+    // URL
     // --------------------------------------------------------
 
     curl_easy_setopt(
@@ -362,6 +375,7 @@ std::string obterEquipamentos(
         CURLOPT_URL,
         "https://lighthousev2.lkp.app.br/v2/equipamentos/ativos"
     );
+
 
     curl_easy_setopt(
         curl,
@@ -382,6 +396,7 @@ std::string obterEquipamentos(
         CURLOPT_WRITEFUNCTION,
         escreverResposta
     );
+
 
     curl_easy_setopt(
         curl,
@@ -409,6 +424,7 @@ std::string obterEquipamentos(
             << curl_easy_strerror(resultado)
             << "\n";
 
+
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
@@ -420,7 +436,8 @@ std::string obterEquipamentos(
     // Status HTTP
     // --------------------------------------------------------
 
-    long statusHTTP;
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
@@ -440,6 +457,7 @@ std::string obterEquipamentos(
         std::cout
             << "A API nao retornou os equipamentos.\n";
 
+
         curl_slist_free_all(headers);
         curl_easy_cleanup(curl);
 
@@ -456,28 +474,240 @@ std::string obterEquipamentos(
 
 
 // ============================================================
-// FUNÇÃO: encontrarEquipamentoPorTag
-// Procura um equipamento pelo campo "tag"
+// FUNÇÃO: substituir
+// Substitui uma sequência de caracteres por outra
 // ============================================================
 
-json encontrarEquipamentoPorTag(
-    const json& equipamentos,
-    const std::string& tagProcurada
+void substituir(
+    std::string& texto,
+    const std::string& procurar,
+    const std::string& substituirPor
 )
 {
+    size_t pos = 0;
+
+
+    while (
+        (pos = texto.find(procurar, pos))
+        != std::string::npos
+    )
+    {
+        texto.replace(
+            pos,
+            procurar.length(),
+            substituirPor
+        );
+
+
+        pos += substituirPor.length();
+    }
+}
+
+
+// ============================================================
+// FUNÇÃO: normalizarTexto
+//
+// Remove acentos e converte para minúsculas.
+//
+// Exemplo:
+//
+// "ESTAÇÃO DE TRABALHO"
+// vira
+//
+// "estacao de trabalho"
+// ============================================================
+
+std::string normalizarTexto(
+    std::string texto
+)
+{
+    // --------------------------------------------------------
+    // A
+    // --------------------------------------------------------
+
+    substituir(texto, "á", "a");
+    substituir(texto, "à", "a");
+    substituir(texto, "ã", "a");
+    substituir(texto, "â", "a");
+    substituir(texto, "ä", "a");
+
+    substituir(texto, "Á", "a");
+    substituir(texto, "À", "a");
+    substituir(texto, "Ã", "a");
+    substituir(texto, "Â", "a");
+    substituir(texto, "Ä", "a");
+
+
+    // --------------------------------------------------------
+    // E
+    // --------------------------------------------------------
+
+    substituir(texto, "é", "e");
+    substituir(texto, "è", "e");
+    substituir(texto, "ê", "e");
+    substituir(texto, "ë", "e");
+
+    substituir(texto, "É", "e");
+    substituir(texto, "È", "e");
+    substituir(texto, "Ê", "e");
+    substituir(texto, "Ë", "e");
+
+
+    // --------------------------------------------------------
+    // I
+    // --------------------------------------------------------
+
+    substituir(texto, "í", "i");
+    substituir(texto, "ì", "i");
+    substituir(texto, "î", "i");
+    substituir(texto, "ï", "i");
+
+    substituir(texto, "Í", "i");
+    substituir(texto, "Ì", "i");
+    substituir(texto, "Î", "i");
+    substituir(texto, "Ï", "i");
+
+
+    // --------------------------------------------------------
+    // O
+    // --------------------------------------------------------
+
+    substituir(texto, "ó", "o");
+    substituir(texto, "ò", "o");
+    substituir(texto, "õ", "o");
+    substituir(texto, "ô", "o");
+    substituir(texto, "ö", "o");
+
+    substituir(texto, "Ó", "o");
+    substituir(texto, "Ò", "o");
+    substituir(texto, "Õ", "o");
+    substituir(texto, "Ô", "o");
+    substituir(texto, "Ö", "o");
+
+
+    // --------------------------------------------------------
+    // U
+    // --------------------------------------------------------
+
+    substituir(texto, "ú", "u");
+    substituir(texto, "ù", "u");
+    substituir(texto, "û", "u");
+    substituir(texto, "ü", "u");
+
+    substituir(texto, "Ú", "u");
+    substituir(texto, "Ù", "u");
+    substituir(texto, "Û", "u");
+    substituir(texto, "Ü", "u");
+
+
+    // --------------------------------------------------------
+    // Ç
+    // --------------------------------------------------------
+
+    substituir(texto, "ç", "c");
+    substituir(texto, "Ç", "c");
+
+
+    // --------------------------------------------------------
+    // Converte ASCII para minúsculo
+    // --------------------------------------------------------
+
+    for (char& c : texto)
+    {
+        c = static_cast<char>(
+            std::tolower(
+                static_cast<unsigned char>(c)
+            )
+        );
+    }
+
+
+    return texto;
+}
+
+
+// ============================================================
+// FUNÇÃO: encontrarEquipamento
+//
+// Procura pelo texto dentro da TAG ou do NOME.
+//
+// A comparação ignora:
+// - maiúsculas/minúsculas
+// - acentos
+// ============================================================
+
+json encontrarEquipamento(
+    const json& equipamentos,
+    const std::string& texto
+)
+{
+    std::string textoNormalizado =
+        normalizarTexto(texto);
+
+
     for (const auto& equipamento : equipamentos)
     {
-        if (!equipamento.contains("tag"))
+        std::string tag = "";
+        std::string nome = "";
+
+
+        // ----------------------------------------------------
+        // Obtém TAG
+        // ----------------------------------------------------
+
+        if (
+            equipamento.contains("tag") &&
+            equipamento["tag"].is_string()
+        )
         {
-            continue;
+            tag =
+                equipamento["tag"];
         }
 
 
-        std::string tag =
-            equipamento["tag"];
+        // ----------------------------------------------------
+        // Obtém NOME
+        // ----------------------------------------------------
+
+        if (
+            equipamento.contains("nome") &&
+            equipamento["nome"].is_string()
+        )
+        {
+            nome =
+                equipamento["nome"];
+        }
 
 
-        if (tag == tagProcurada)
+        std::string tagNormalizada =
+            normalizarTexto(tag);
+
+
+        std::string nomeNormalizado =
+            normalizarTexto(nome);
+
+
+        // ----------------------------------------------------
+        // Procura dentro da TAG
+        // ----------------------------------------------------
+
+        if (
+            tagNormalizada.find(textoNormalizado)
+            != std::string::npos
+        )
+        {
+            return equipamento;
+        }
+
+
+        // ----------------------------------------------------
+        // Procura dentro do NOME
+        // ----------------------------------------------------
+
+        if (
+            nomeNormalizado.find(textoNormalizado)
+            != std::string::npos
+        )
         {
             return equipamento;
         }
@@ -504,9 +734,9 @@ int main()
         << "=====================================\n\n";
 
 
-    // --------------------------------------------------------
-    // 1. Autenticação
-    // --------------------------------------------------------
+    // ========================================================
+    // 1. AUTENTICAÇÃO
+    // ========================================================
 
     std::string token =
         obterToken();
@@ -521,9 +751,9 @@ int main()
     }
 
 
-    // --------------------------------------------------------
-    // 2. Consulta equipamentos
-    // --------------------------------------------------------
+    // ========================================================
+    // 2. CONSULTA EQUIPAMENTOS
+    // ========================================================
 
     std::string resposta =
         obterEquipamentos(token);
@@ -538,21 +768,15 @@ int main()
     }
 
 
-    // --------------------------------------------------------
-    // 3. Transforma resposta em JSON
-    // --------------------------------------------------------
+    // ========================================================
+    // 3. TRANSFORMA RESPOSTA EM JSON
+    // ========================================================
 
     try
     {
         json equipamentos =
             json::parse(resposta);
 
-
-        std::cout
-            << "\nJSON dos equipamentos recebido.\n";
-
-
-        // Verifica se realmente recebemos uma lista
 
         if (!equipamentos.is_array())
         {
@@ -564,206 +788,376 @@ int main()
 
 
         std::cout
+            << "\nJSON dos equipamentos recebido.\n";
+
+
+        std::cout
             << "Quantidade de equipamentos: "
             << equipamentos.size()
             << "\n";
 
 
-        // ----------------------------------------------------
-        // 4. Procura equipamento pela tag
-        // ----------------------------------------------------
+        // ====================================================
+        // 4. MENU DE EQUIPAMENTOS
+        // ====================================================
 
-        std::string tagProcurada =
-            "MSLH_SERVER";
+        std::cout
+            << "\n=====================================\n";
+
+        std::cout
+            << "          EQUIPAMENTOS\n";
+
+        std::cout
+            << "=====================================\n\n";
 
 
         std::cout
-            << "\nProcurando equipamento...\n";
+            << "1 - ATENDIMENTO CHAMADO/ESCRITORIO\n";
+
+        std::cout
+            << "2 - CRIPTOGRAFIA HD/CAMPO\n";
+
+        std::cout
+            << "3 - DOCUMENTACAO/CAMPO\n";
+
+        std::cout
+            << "4 - ESTACAO DE TRABALHO 01/ESTACAO DE TRAB...\n";
+
+        std::cout
+            << "5 - MSLH_SERVER/SERVIDOR\n";
+
+
+        int escolhaEquipamento;
 
 
         std::cout
-            << "Tag procurada: "
-            << tagProcurada
-            << "\n";
+            << "\nEscolha o equipamento: ";
 
+
+        std::cin
+            >> escolhaEquipamento;
+
+
+        if (
+            escolhaEquipamento < 1 ||
+            escolhaEquipamento > 5
+        )
+        {
+            std::cout
+                << "\nOpcao invalida.\n";
+
+            return 1;
+        }
+
+
+        // ====================================================
+        // 5. IDENTIFICADOR DO EQUIPAMENTO
+        // ====================================================
+
+        std::string identificadorEquipamento;
+
+
+        switch (escolhaEquipamento)
+        {
+            case 1:
+
+                identificadorEquipamento =
+                    "ATENDIMENTO CHAMADO/ESCRITORIO";
+
+                break;
+
+
+            case 2:
+
+                identificadorEquipamento =
+                    "CRIPTOGRAFIA HD/CAMPO";
+
+                break;
+
+
+            case 3:
+
+                identificadorEquipamento =
+                    "DOCUMENTACAO/CAMPO";
+
+                break;
+
+
+            case 4:
+
+                identificadorEquipamento =
+                    "ESTACAO DE TRABALHO 01";
+
+                break;
+
+
+            case 5:
+
+                identificadorEquipamento =
+                    "MSLH_SERVER/SERVIDOR";
+
+                break;
+        }
+
+
+        // ====================================================
+        // 6. PROCURA EQUIPAMENTO NA API
+        // ====================================================
 
         json equipamentoEncontrado =
-            encontrarEquipamentoPorTag(
+            encontrarEquipamento(
                 equipamentos,
-                tagProcurada
+                identificadorEquipamento
             );
 
 
         if (equipamentoEncontrado.empty())
         {
             std::cout
-                << "\nEquipamento nao encontrado.\n";
+                << "\nEquipamento nao encontrado na API.\n";
+
+
+            std::cout
+                << "Identificador procurado: "
+                << identificadorEquipamento
+                << "\n";
+
 
             return 1;
         }
 
 
-        // ----------------------------------------------------
-        // Mostra equipamento encontrado
-        // ----------------------------------------------------
+        // ====================================================
+        // 7. MOSTRA EQUIPAMENTO SELECIONADO
+        // ====================================================
 
         std::cout
             << "\n=====================================\n";
 
         std::cout
-            << "       EQUIPAMENTO ENCONTRADO\n";
+            << "       EQUIPAMENTO SELECIONADO\n";
 
         std::cout
             << "=====================================\n";
 
 
-        std::cout
-            << "ID: "
-            << equipamentoEncontrado["equipamento"]
-            << "\n";
+        if (
+            equipamentoEncontrado.contains("equipamento")
+        )
+        {
+            std::cout
+                << "ID: "
+                << equipamentoEncontrado["equipamento"]
+                << "\n";
+        }
+
+
+        if (
+            equipamentoEncontrado.contains("nome")
+        )
+        {
+            std::cout
+                << "Nome: "
+                << equipamentoEncontrado["nome"]
+                << "\n";
+        }
+
+
+        if (
+            equipamentoEncontrado.contains("tag")
+        )
+        {
+            std::cout
+                << "Tag: "
+                << equipamentoEncontrado["tag"]
+                << "\n";
+        }
+
+
+        if (
+            equipamentoEncontrado.contains("site")
+        )
+        {
+            std::cout
+                << "Site ID: "
+                << equipamentoEncontrado["site"]
+                << "\n";
+        }
+
+
+        if (
+            equipamentoEncontrado.contains("area")
+        )
+        {
+            std::cout
+                << "Area ID: "
+                << equipamentoEncontrado["area"]
+                << "\n";
+        }
+
+
+        // ====================================================
+        // 8. DESCRIÇÃO DA OCORRÊNCIA
+        // ====================================================
+
+        std::cin.ignore(
+            std::numeric_limits<std::streamsize>::max(),
+            '\n'
+        );
+
+
+        DadosOcorrencia dados;
 
 
         std::cout
-            << "Nome: "
-            << equipamentoEncontrado["nome"]
-            << "\n";
+            << "\nDigite a descricao da ocorrencia: ";
 
 
-        std::cout
-            << "Tag: "
-            << equipamentoEncontrado["tag"]
-            << "\n";
+        std::getline(
+            std::cin,
+            dados.descricao
+        );
 
 
-        std::cout
-            << "Site ID: "
-            << equipamentoEncontrado["site"]
-            << "\n";
-
-
-        std::cout
-            << "Area ID: "
-            << equipamentoEncontrado["area"]
-            << "\n";
-
-
-        // ----------------------------------------------------
-        // Dados completos do equipamento
-        // ----------------------------------------------------
+        // ====================================================
+        // 9. TIPO DA OCORRÊNCIA
+        // ====================================================
 
         std::cout
             << "\n=====================================\n";
 
         std::cout
-            << "      DADOS COMPLETOS DO EQUIPAMENTO\n";
+            << "       TIPO DA OCORRENCIA\n";
 
         std::cout
-            << "=====================================\n";
+            << "=====================================\n\n";
 
 
         std::cout
-            << equipamentoEncontrado.dump(4)
-            << "\n";
-
-
-        // ----------------------------------------------------
-        // 5. Consulta tipos de ocorrência
-        // ----------------------------------------------------
+            << "1 - Melhoria\n";
 
         std::cout
-            << "\n=====================================\n";
+            << "2 - Preventiva\n";
 
         std::cout
-            << "       TIPOS DE OCORRENCIA\n";
+            << "3 - Anomalia Simples\n";
 
         std::cout
-            << "=====================================\n";
-
-
-        json tipos =
-            obterTiposOcorrencia(token);
-
-
-        // ----------------------------------------------------
-        // 6. Consulta prioridades
-        // ----------------------------------------------------
+            << "4 - Anomalia Critica\n";
 
         std::cout
-            << "\n=====================================\n";
+            << "5 - Chamado\n";
+
+
+        int escolhaTipo;
+
 
         std::cout
-            << "       PRIORIDADES\n";
-
-        std::cout
-            << "=====================================\n";
+            << "\nEscolha o tipo: ";
 
 
-        json prioridades =
-            obterPrioridadesOcorrencia(token);
+        std::cin
+            >> escolhaTipo;
 
 
-        // ----------------------------------------------------
-        // 7. Consulta usuários
-        // ----------------------------------------------------
+        switch (escolhaTipo)
+        {
+            case 1:
 
-        std::cout
-            << "\n=====================================\n";
+                dados.tipoAnomalia = 23;
 
-        std::cout
-            << "       USUARIOS\n";
-
-        std::cout
-            << "=====================================\n";
+                break;
 
 
-        json usuarios =
-            obterUsuarios(token);
+            case 2:
+
+                dados.tipoAnomalia = 21;
+
+                break;
 
 
-        // ----------------------------------------------------
-        // 8. Monta a ocorrência
-        // ----------------------------------------------------
+            case 3:
 
-        std::cout
-            << "\n========================================\n";
+                dados.tipoAnomalia = 14;
 
-        std::cout
-            << "CONSULTA CONCLUIDA\n";
-
-        std::cout
-            << "========================================\n";
+                break;
 
 
-        /*
-         * IMPORTANTE:
-         *
-         * Aqui precisamos passar SOMENTE o equipamento
-         * encontrado pela tag.
-         *
-         * "equipamentos" = array com todos os equipamentos
-         *
-         * "equipamentoEncontrado" = objeto de um único
-         * equipamento.
-         */
+            case 4:
+
+                dados.tipoAnomalia = 13;
+
+                break;
+
+
+            case 5:
+
+                dados.tipoAnomalia = 19;
+
+                break;
+
+
+            default:
+
+                std::cout
+                    << "\nOpcao de tipo invalida.\n";
+
+                return 1;
+        }
+
+
+        // ====================================================
+        // 10. SOLICITANTE E EXECUTOR
+        // ====================================================
+
+        dados.solicitanteId =
+            91692;
+
+
+        dados.executorId =
+            91692;
+
+
+        // Guarda a TAG real encontrada na API
+
+        if (
+            equipamentoEncontrado.contains("tag") &&
+            equipamentoEncontrado["tag"].is_string()
+        )
+        {
+            dados.tagEquipamento =
+                equipamentoEncontrado["tag"];
+        }
+        else
+        {
+            dados.tagEquipamento =
+                identificadorEquipamento;
+        }
+
+
+        // ====================================================
+        // 11. MONTA OCORRÊNCIA
+        // ====================================================
 
         json ocorrencia =
             montarOcorrencia(
-                equipamentoEncontrado
+                equipamentoEncontrado,
+                dados
             );
 
 
-        // ----------------------------------------------------
-        // 9. Mostra JSON da ocorrência
-        // ----------------------------------------------------
+        // ====================================================
+        // 12. MOSTRA JSON DA OCORRÊNCIA
+        // ====================================================
 
         std::cout
             << "\n========================================\n";
 
         std::cout
-            << "OCORRENCIA MONTADA\n";
+            << "       OCORRENCIA MONTADA\n";
 
         std::cout
-            << "========================================\n";
+            << "========================================\n\n";
 
 
         std::cout
@@ -771,15 +1165,15 @@ int main()
             << "\n";
 
 
-        // ----------------------------------------------------
-        // 10. Envia ocorrência
-        // ----------------------------------------------------
+        // ====================================================
+        // 13. ENVIA OCORRÊNCIA
+        // ====================================================
 
         std::cout
             << "\n========================================\n";
 
         std::cout
-            << "ENVIANDO OCORRENCIA\n";
+            << "       ENVIANDO OCORRENCIA\n";
 
         std::cout
             << "========================================\n";
@@ -791,6 +1185,10 @@ int main()
                 ocorrencia
             );
 
+
+        // ====================================================
+        // 14. RESULTADO
+        // ====================================================
 
         if (sucesso)
         {
@@ -815,7 +1213,6 @@ int main()
                 << "========================================\n";
         }
     }
-
     catch (const json::parse_error& erro)
     {
         std::cout

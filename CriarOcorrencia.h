@@ -6,12 +6,45 @@
 
 using json = nlohmann::json;
 
-json montarOcorrencia(const json& equipamento);
+
+// ============================================================
+// DADOS DE ENTRADA DA OCORRÊNCIA
+// ============================================================
+
+struct DadosOcorrencia
+{
+    std::string tagEquipamento;
+    std::string descricao;
+
+    int tipoAnomalia;
+    int solicitanteId;
+    int executorId;
+};
+
+
+// ============================================================
+// MONTA A OCORRÊNCIA
+// ============================================================
+
+json montarOcorrencia(
+    const json& equipamento,
+    const DadosOcorrencia& dados
+);
+
+
+// ============================================================
+// ENVIA A OCORRÊNCIA
+// ============================================================
 
 bool enviarOcorrencia(
     const std::string& token,
     const json& ocorrencia
 );
+
+
+// ============================================================
+// CONSULTAS
+// ============================================================
 
 json obterTiposOcorrencia(
     const std::string& token
@@ -24,12 +57,5 @@ json obterPrioridadesOcorrencia(
 json obterUsuarios(
     const std::string& token
 );
-
-
-// Consulta as prioridades de ocorrência
-json obterPrioridadesOcorrencia(
-    const std::string& token
-);
-
 
 #endif

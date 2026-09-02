@@ -1,86 +1,170 @@
 #include <iostream>
 #include <string>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
 #include <curl/curl.h>
 #include <nlohmann/json.hpp>
+
 #include "CriarOcorrencia.h"
 
 using json = nlohmann::json;
 
+
+// ============================================================
+// FUNÇÃO: escreverResposta
+// Recebe os dados retornados pela API
+// ============================================================
+
 static size_t escreverResposta(
-    void* contents,
-    size_t size,
-    size_t nmemb,
+    void* conteudo,
+    size_t tamanho,
+    size_t quantidade,
     std::string* resposta
-) {
-    size_t total = size * nmemb;
+)
+{
+    size_t total = tamanho * quantidade;
+
     resposta->append(
-        static_cast<char*>(contents),
+        static_cast<char*>(conteudo),
         total
     );
+
     return total;
 }
 
 
 // ============================================================
-// MONTA A OCORRÊNCIA
+// FUNÇÃO: montarOcorrencia
+// Monta o JSON que será enviado para o LeanKeep
 // ============================================================
 
-json montarOcorrencia(const json& equipamento)
+json montarOcorrencia(
+    const json& equipamento,
+    const DadosOcorrencia& dados
+)
 {
     json ocorrencia;
 
-    // Dados da empresa e unidade
-    ocorrencia["empresaId"] = equipamento["empresa"];
-    ocorrencia["siteId"] = equipamento["site"];
 
-    // Plataforma para integração via API
-    ocorrencia["plataforma"] = 6;
+    // --------------------------------------------------------
+    // DATA E HORA DA OCORRÊNCIA
+    // --------------------------------------------------------
 
-    // Tipo da ocorrência
-    // 19 = Chamado
-    ocorrencia["tipoAnomalia"] = 19;
+    std::time_t agora =
+        std::time(nullptr);
 
-    // Descrição
-    ocorrencia["descricao"] = "Ocorrencia de teste via API";
+    std::tm* tempoLocal =
+        std::localtime(&agora);
 
-    // Equipamento
-    ocorrencia["equipamentoId"] = equipamento["equipamento"];
+    std::ostringstream dataHora;
 
-    // Sistema
-    ocorrencia["sistemaEmpresaId"] = equipamento["sistemaEmpresa"];
+    dataHora << std::put_time(
+        tempoLocal,
+        "%Y-%m-%dT%H:%M:%S"
+    );
 
-    // Área
-    ocorrencia["areaId"] = equipamento["area"];
+    ocorrencia["dataRegistro"] =
+        dataHora.str();
 
-    // Tipo de equipamento
-    ocorrencia["tipoEquipamentoId"] = equipamento["tipoEquipamento"];
 
-    // Solicitante
-    // Equipe São Luiz - Equipe 1
-    // ID: 91692
+    // --------------------------------------------------------
+    // DADOS OBTIDOS DO EQUIPAMENTO
+    // --------------------------------------------------------
+
+    ocorrencia["empresaId"] =
+        equipamento["empresa"];
+
+    ocorrencia["siteId"] =
+        equipamento["site"];
+
+    ocorrencia["equipamentoId"] =
+        equipamento["equipamento"];
+
+    ocorrencia["sistemaEmpresaId"] =
+        equipamento["sistemaEmpresa"];
+
+    ocorrencia["areaId"] =
+        equipamento["area"];
+
+    ocorrencia["tipoEquipamentoId"] =
+        equipamento["tipoEquipamento"];
+
+
+    // --------------------------------------------------------
+    // DADOS DA OCORRÊNCIA
+    // --------------------------------------------------------
+
+    ocorrencia["tipoAnomalia"] =
+        dados.tipoAnomalia;
+
+    ocorrencia["descricao"] =
+        dados.descricao;
+
+
+    // --------------------------------------------------------
+    // PLATAFORMA
+    // --------------------------------------------------------
+
+    ocorrencia["plataforma"] =
+        6;
+
+
+    // --------------------------------------------------------
+    // SOLICITANTE / EMITENTE
+    // --------------------------------------------------------
+
     json emitente;
-    emitente["emitenteId"] = 91692;
-    emitente["emailCadastro"] = true;
-    emitente["emailCorrecao"] = true;
 
-    ocorrencia["emitentes"] = json::array();
-    ocorrencia["emitentes"].push_back(emitente);
+    emitente["emitenteId"] =
+        dados.solicitanteId;
+
+    emitente["emailCadastro"] =
+        true;
+
+    emitente["emailCorrecao"] =
+        true;
 
 
-    // Executor / Responsável
-    // Equipe São Luiz - Equipe 1
-    // ID: 91692
+    ocorrencia["emitentes"] =
+        json::array();
+
+    ocorrencia["emitentes"].push_back(
+        emitente
+    );
+
+
+    // --------------------------------------------------------
+    // EXECUTOR / RESPONSÁVEL
+    // --------------------------------------------------------
+
     json executor;
-    executor["executorId"] = 91692;
-    executor["emailCadastro"] = false;
-    executor["emailCorrecao"] = false;
 
-    ocorrencia["executores"] = json::array();
-    ocorrencia["executores"].push_back(executor);
+    executor["executorId"] =
+        dados.executorId;
+
+    executor["emailCadastro"] =
+        false;
+
+    executor["emailCorrecao"] =
+        false;
 
 
-    // Não validar ocorrência duplicada neste primeiro teste
-    ocorrencia["validarDuplicidade"] = false;
+    ocorrencia["executores"] =
+        json::array();
+
+    ocorrencia["executores"].push_back(
+        executor
+    );
+
+
+    // --------------------------------------------------------
+    // VALIDAÇÃO DE DUPLICIDADE
+    // --------------------------------------------------------
+
+    ocorrencia["validarDuplicidade"] =
+        false;
 
 
     return ocorrencia;
@@ -88,29 +172,58 @@ json montarOcorrencia(const json& equipamento)
 
 
 // ============================================================
-// BUSCA TIPOS DE OCORRÊNCIA
+// FUNÇÃO: obterTiposOcorrencia
+// Consulta os tipos disponíveis no LeanKeep
 // ============================================================
 
-json obterTiposOcorrencia(const std::string& token)
+json obterTiposOcorrencia(
+    const std::string& token
+)
 {
-    CURL* curl = curl_easy_init();
+    CURL* curl =
+        curl_easy_init();
 
     if (!curl)
+    {
+        std::cout
+            << "Erro ao inicializar CURL.\n";
+
         return {};
+    }
+
 
     std::string resposta;
 
-    struct curl_slist* headers = nullptr;
 
-    headers = curl_slist_append(
-        headers,
-        ("Authorization: Bearer " + token).c_str()
-    );
+    // --------------------------------------------------------
+    // Headers
+    // --------------------------------------------------------
 
-    headers = curl_slist_append(
-        headers,
-        "Content-Type: application/json"
-    );
+    struct curl_slist* headers =
+        nullptr;
+
+
+    std::string autorizacao =
+        "Authorization: Bearer " + token;
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            autorizacao.c_str()
+        );
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            "Content-Type: application/json"
+        );
+
+
+    // --------------------------------------------------------
+    // URL
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -118,11 +231,17 @@ json obterTiposOcorrencia(const std::string& token)
         "https://lighthousev2.lkp.app.br/v1/tiposocorrencias"
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_HTTPHEADER,
         headers
     );
+
+
+    // --------------------------------------------------------
+    // Recebe resposta
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -130,38 +249,75 @@ json obterTiposOcorrencia(const std::string& token)
         escreverResposta
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_WRITEDATA,
         &resposta
     );
 
-    CURLcode resultado = curl_easy_perform(curl);
 
-    long status = 0;
+    // --------------------------------------------------------
+    // Executa
+    // --------------------------------------------------------
+
+    std::cout
+        << "\nConsultando tipos de ocorrencia...\n";
+
+
+    CURLcode resultado =
+        curl_easy_perform(curl);
+
+
+    // --------------------------------------------------------
+    // Status HTTP
+    // --------------------------------------------------------
+
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
         CURLINFO_RESPONSE_CODE,
-        &status
+        &statusHTTP
     );
 
-    std::cout << "\nStatus tipos de ocorrencia: "
-              << status << "\n";
 
-    std::cout << resposta << "\n";
+    std::cout
+        << "Status tipos: "
+        << statusHTTP
+        << "\n";
+
+
+    std::cout
+        << "Resposta:\n"
+        << resposta
+        << "\n";
+
+
+    // --------------------------------------------------------
+    // Limpeza
+    // --------------------------------------------------------
 
     curl_slist_free_all(headers);
+
     curl_easy_cleanup(curl);
+
 
     if (resultado != CURLE_OK)
     {
-        std::cout << "Erro CURL: "
-                  << curl_easy_strerror(resultado)
-                  << "\n";
+        std::cout
+            << "Erro CURL: "
+            << curl_easy_strerror(resultado)
+            << "\n";
 
         return {};
     }
+
+
+    // --------------------------------------------------------
+    // Interpreta JSON
+    // --------------------------------------------------------
 
     try
     {
@@ -169,36 +325,67 @@ json obterTiposOcorrencia(const std::string& token)
     }
     catch (...)
     {
-        std::cout << "Erro ao interpretar JSON.\n";
+        std::cout
+            << "Erro ao interpretar JSON dos tipos.\n";
+
         return {};
     }
 }
 
 
 // ============================================================
-// BUSCA PRIORIDADES
+// FUNÇÃO: obterPrioridadesOcorrencia
+// Consulta as prioridades da unidade
 // ============================================================
 
-json obterPrioridadesOcorrencia(const std::string& token)
+json obterPrioridadesOcorrencia(
+    const std::string& token
+)
 {
-    CURL* curl = curl_easy_init();
+    CURL* curl =
+        curl_easy_init();
 
     if (!curl)
+    {
+        std::cout
+            << "Erro ao inicializar CURL.\n";
+
         return {};
+    }
+
 
     std::string resposta;
 
-    struct curl_slist* headers = nullptr;
 
-    headers = curl_slist_append(
-        headers,
-        ("Authorization: Bearer " + token).c_str()
-    );
+    // --------------------------------------------------------
+    // Headers
+    // --------------------------------------------------------
 
-    headers = curl_slist_append(
-        headers,
-        "Content-Type: application/json"
-    );
+    struct curl_slist* headers =
+        nullptr;
+
+
+    std::string autorizacao =
+        "Authorization: Bearer " + token;
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            autorizacao.c_str()
+        );
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            "Content-Type: application/json"
+        );
+
+
+    // --------------------------------------------------------
+    // URL
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -206,11 +393,17 @@ json obterPrioridadesOcorrencia(const std::string& token)
         "https://lighthousev2.lkp.app.br/v1/prioridadesocorrencias?unidadeId=65067"
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_HTTPHEADER,
         headers
     );
+
+
+    // --------------------------------------------------------
+    // Recebe resposta
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -218,38 +411,75 @@ json obterPrioridadesOcorrencia(const std::string& token)
         escreverResposta
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_WRITEDATA,
         &resposta
     );
 
-    CURLcode resultado = curl_easy_perform(curl);
 
-    long status = 0;
+    // --------------------------------------------------------
+    // Executa
+    // --------------------------------------------------------
+
+    std::cout
+        << "\nConsultando prioridades de ocorrencia...\n";
+
+
+    CURLcode resultado =
+        curl_easy_perform(curl);
+
+
+    // --------------------------------------------------------
+    // Status HTTP
+    // --------------------------------------------------------
+
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
         CURLINFO_RESPONSE_CODE,
-        &status
+        &statusHTTP
     );
 
-    std::cout << "\nStatus prioridades: "
-              << status << "\n";
 
-    std::cout << resposta << "\n";
+    std::cout
+        << "Status prioridades: "
+        << statusHTTP
+        << "\n";
+
+
+    std::cout
+        << "Resposta:\n"
+        << resposta
+        << "\n";
+
+
+    // --------------------------------------------------------
+    // Limpeza
+    // --------------------------------------------------------
 
     curl_slist_free_all(headers);
+
     curl_easy_cleanup(curl);
+
 
     if (resultado != CURLE_OK)
     {
-        std::cout << "Erro CURL: "
-                  << curl_easy_strerror(resultado)
-                  << "\n";
+        std::cout
+            << "Erro CURL: "
+            << curl_easy_strerror(resultado)
+            << "\n";
 
         return {};
     }
+
+
+    // --------------------------------------------------------
+    // Interpreta JSON
+    // --------------------------------------------------------
 
     try
     {
@@ -257,36 +487,67 @@ json obterPrioridadesOcorrencia(const std::string& token)
     }
     catch (...)
     {
-        std::cout << "Erro ao interpretar JSON.\n";
+        std::cout
+            << "Erro ao interpretar JSON das prioridades.\n";
+
         return {};
     }
 }
 
 
 // ============================================================
-// BUSCA USUÁRIOS
+// FUNÇÃO: obterUsuarios
+// Consulta usuários da unidade
 // ============================================================
 
-json obterUsuarios(const std::string& token)
+json obterUsuarios(
+    const std::string& token
+)
 {
-    CURL* curl = curl_easy_init();
+    CURL* curl =
+        curl_easy_init();
 
     if (!curl)
+    {
+        std::cout
+            << "Erro ao inicializar CURL.\n";
+
         return {};
+    }
+
 
     std::string resposta;
 
-    struct curl_slist* headers = nullptr;
 
-    headers = curl_slist_append(
-        headers,
-        ("Authorization: Bearer " + token).c_str()
-    );
+    // --------------------------------------------------------
+    // Headers
+    // --------------------------------------------------------
 
-    headers = curl_slist_append(
-        headers,
-        "Content-Type: application/json"
-    );
+    struct curl_slist* headers =
+        nullptr;
+
+
+    std::string autorizacao =
+        "Authorization: Bearer " + token;
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            autorizacao.c_str()
+        );
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            "Content-Type: application/json"
+        );
+
+
+    // --------------------------------------------------------
+    // URL
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -294,11 +555,17 @@ json obterUsuarios(const std::string& token)
         "https://lighthousev2.lkp.app.br/v1/usuarios?EmpresaId=3554&UnidadeId=65067"
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_HTTPHEADER,
         headers
     );
+
+
+    // --------------------------------------------------------
+    // Recebe resposta
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -306,38 +573,75 @@ json obterUsuarios(const std::string& token)
         escreverResposta
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_WRITEDATA,
         &resposta
     );
 
-    CURLcode resultado = curl_easy_perform(curl);
 
-    long status = 0;
+    // --------------------------------------------------------
+    // Executa
+    // --------------------------------------------------------
+
+    std::cout
+        << "\nConsultando usuarios...\n";
+
+
+    CURLcode resultado =
+        curl_easy_perform(curl);
+
+
+    // --------------------------------------------------------
+    // Status HTTP
+    // --------------------------------------------------------
+
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
         CURLINFO_RESPONSE_CODE,
-        &status
+        &statusHTTP
     );
 
-    std::cout << "\nStatus usuarios: "
-              << status << "\n";
 
-    std::cout << resposta << "\n";
+    std::cout
+        << "Status usuarios: "
+        << statusHTTP
+        << "\n";
+
+
+    std::cout
+        << "Resposta:\n"
+        << resposta
+        << "\n";
+
+
+    // --------------------------------------------------------
+    // Limpeza
+    // --------------------------------------------------------
 
     curl_slist_free_all(headers);
+
     curl_easy_cleanup(curl);
+
 
     if (resultado != CURLE_OK)
     {
-        std::cout << "Erro CURL: "
-                  << curl_easy_strerror(resultado)
-                  << "\n";
+        std::cout
+            << "Erro CURL: "
+            << curl_easy_strerror(resultado)
+            << "\n";
 
         return {};
     }
+
+
+    // --------------------------------------------------------
+    // Interpreta JSON
+    // --------------------------------------------------------
 
     try
     {
@@ -345,14 +649,17 @@ json obterUsuarios(const std::string& token)
     }
     catch (...)
     {
-        std::cout << "Erro ao interpretar JSON.\n";
+        std::cout
+            << "Erro ao interpretar JSON dos usuarios.\n";
+
         return {};
     }
 }
 
 
 // ============================================================
-// ENVIA OCORRÊNCIA
+// FUNÇÃO: enviarOcorrencia
+// Envia a ocorrência para o LeanKeep
 // ============================================================
 
 bool enviarOcorrencia(
@@ -360,36 +667,78 @@ bool enviarOcorrencia(
     const json& ocorrencia
 )
 {
-    CURL* curl = curl_easy_init();
+    CURL* curl =
+        curl_easy_init();
+
 
     if (!curl)
     {
-        std::cout << "Erro ao iniciar CURL.\n";
+        std::cout
+            << "Erro ao inicializar CURL.\n";
+
         return false;
     }
 
+
     std::string resposta;
 
-    struct curl_slist* headers = nullptr;
 
-    headers = curl_slist_append(
-        headers,
-        ("Authorization: Bearer " + token).c_str()
-    );
+    // --------------------------------------------------------
+    // Headers
+    // --------------------------------------------------------
 
-    headers = curl_slist_append(
-        headers,
-        "Content-Type: application/json"
-    );
+    struct curl_slist* headers =
+        nullptr;
 
-    std::string corpo = ocorrencia.dump(4);
 
-    std::cout << "\n========================================\n";
-    std::cout << "JSON ENVIADO:\n";
-    std::cout << "========================================\n";
-    std::cout << corpo << "\n";
-    std::cout << "========================================\n";
+    std::string autorizacao =
+        "Authorization: Bearer " + token;
 
+
+    headers =
+        curl_slist_append(
+            headers,
+            autorizacao.c_str()
+        );
+
+
+    headers =
+        curl_slist_append(
+            headers,
+            "Content-Type: application/json"
+        );
+
+
+    // --------------------------------------------------------
+    // Converte JSON para string
+    // --------------------------------------------------------
+
+    std::string corpo =
+        ocorrencia.dump(4);
+
+
+    std::cout
+        << "\n========================================\n";
+
+    std::cout
+        << "JSON ENVIADO:\n";
+
+    std::cout
+        << "========================================\n";
+
+
+    std::cout
+        << corpo
+        << "\n";
+
+
+    std::cout
+        << "========================================\n";
+
+
+    // --------------------------------------------------------
+    // Configura POST
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -397,11 +746,13 @@ bool enviarOcorrencia(
         "https://lighthousev2.lkp.app.br/v3/ocorrencias"
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_POST,
         1L
     );
+
 
     curl_easy_setopt(
         curl,
@@ -409,11 +760,17 @@ bool enviarOcorrencia(
         headers
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_POSTFIELDS,
         corpo.c_str()
     );
+
+
+    // --------------------------------------------------------
+    // Recebe resposta
+    // --------------------------------------------------------
 
     curl_easy_setopt(
         curl,
@@ -421,59 +778,104 @@ bool enviarOcorrencia(
         escreverResposta
     );
 
+
     curl_easy_setopt(
         curl,
         CURLOPT_WRITEDATA,
         &resposta
     );
 
-    // NÃO deixar CURLOPT_VERBOSE ativo
-    // para não expor informações sensíveis.
 
-    CURLcode resultado = curl_easy_perform(curl);
+    // --------------------------------------------------------
+    // Executa POST
+    // --------------------------------------------------------
 
-    long status = 0;
+    CURLcode resultado =
+        curl_easy_perform(curl);
+
+
+    // --------------------------------------------------------
+    // Status HTTP
+    // --------------------------------------------------------
+
+    long statusHTTP = 0;
+
 
     curl_easy_getinfo(
         curl,
         CURLINFO_RESPONSE_CODE,
-        &status
+        &statusHTTP
     );
 
 
-    std::cout << "\n========================================\n";
-    std::cout << "RESPOSTA DA API\n";
-    std::cout << "========================================\n";
+    // --------------------------------------------------------
+    // Mostra resposta
+    // --------------------------------------------------------
 
-    std::cout << "HTTP Status: "
-              << status
-              << "\n\n";
+    std::cout
+        << "\n========================================\n";
 
-    std::cout << resposta << "\n";
+    std::cout
+        << "RESPOSTA DA API\n";
 
+    std::cout
+        << "========================================\n";
+
+
+    std::cout
+        << "HTTP Status: "
+        << statusHTTP
+        << "\n\n";
+
+
+    std::cout
+        << resposta
+        << "\n";
+
+
+    // --------------------------------------------------------
+    // Limpeza
+    // --------------------------------------------------------
 
     curl_slist_free_all(headers);
+
     curl_easy_cleanup(curl);
 
 
+    // --------------------------------------------------------
+    // Verifica erro CURL
+    // --------------------------------------------------------
+
     if (resultado != CURLE_OK)
     {
-        std::cout << "\nErro CURL: "
-                  << curl_easy_strerror(resultado)
-                  << "\n";
+        std::cout
+            << "\nErro CURL: "
+            << curl_easy_strerror(resultado)
+            << "\n";
 
         return false;
     }
 
 
-    if (status == 200 || status == 201)
+    // --------------------------------------------------------
+    // Verifica status HTTP
+    // --------------------------------------------------------
+
+    if (
+        statusHTTP == 200 ||
+        statusHTTP == 201
+    )
     {
-        std::cout << "\nOCORRENCIA CRIADA COM SUCESSO!\n";
+        std::cout
+            << "\nOCORRENCIA CRIADA COM SUCESSO!\n";
+
         return true;
     }
 
 
-    std::cout << "\nFalha ao criar ocorrencia.\n";
+    std::cout
+        << "\nFalha ao criar ocorrencia.\n";
+
 
     return false;
 }
