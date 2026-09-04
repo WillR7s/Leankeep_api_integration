@@ -3,6 +3,10 @@
 #include <limits>
 #include <nlohmann/json.hpp>
 
+#ifdef _WIN32
+#include <windows.h>
+#endif
+
 #include "CriarOcorrencia.h"
 
 #include "LeanKeep/Autenticacao.h"
@@ -14,6 +18,8 @@
 #include "Configuracao/LeankeepConfig.h"
 #include "Interface/EntradaOcorrencia.h"
 
+#include "Planner/EnviarEmail.h"
+
 using json = nlohmann::json;
 
 
@@ -23,6 +29,11 @@ using json = nlohmann::json;
 
 int main()
 {
+#ifdef _WIN32
+    SetConsoleCP(65001);
+    SetConsoleOutputCP(65001);
+#endif
+
     std::cout
         << "=====================================\n";
 
@@ -37,9 +48,17 @@ int main()
     // 1. AUTENTICAÇÃO
     // ========================================================
 
-    std::string token =
-        obterToken();
+    std::string login;
+    std::string senha;
 
+    std::cout << "\nLogin LeanKeep: ";
+    std::getline(std::cin, login);
+
+    std::cout << "Senha LeanKeep: ";
+    std::getline(std::cin, senha);
+
+    std::string token =
+        obterToken(login, senha);
 
     if (token.empty())
     {
@@ -56,7 +75,6 @@ int main()
 
     std::string resposta =
         obterEquipamentos(token);
-
 
     if (resposta.empty())
     {
@@ -76,7 +94,6 @@ int main()
         json equipamentos =
             json::parse(resposta);
 
-
         if (!equipamentos.is_array())
         {
             std::cout
@@ -84,7 +101,6 @@ int main()
 
             return 1;
         }
-
 
         std::cout
             << "\nJSON dos equipamentos recebido.\n";
@@ -102,7 +118,6 @@ int main()
         std::string identificadorEquipamento =
             escolherEquipamento();
 
-
         if (identificadorEquipamento.empty())
         {
             return 1;
@@ -118,7 +133,6 @@ int main()
                 equipamentos,
                 identificadorEquipamento
             );
-
 
         if (equipamentoEncontrado.empty())
         {
@@ -148,9 +162,7 @@ int main()
             << "=====================================\n";
 
 
-        if (
-            equipamentoEncontrado.contains("equipamento")
-        )
+        if (equipamentoEncontrado.contains("equipamento"))
         {
             std::cout
                 << "ID: "
@@ -159,9 +171,7 @@ int main()
         }
 
 
-        if (
-            equipamentoEncontrado.contains("nome")
-        )
+        if (equipamentoEncontrado.contains("nome"))
         {
             std::cout
                 << "Nome: "
@@ -170,9 +180,7 @@ int main()
         }
 
 
-        if (
-            equipamentoEncontrado.contains("tag")
-        )
+        if (equipamentoEncontrado.contains("tag"))
         {
             std::cout
                 << "Tag: "
@@ -181,9 +189,7 @@ int main()
         }
 
 
-        if (
-            equipamentoEncontrado.contains("site")
-        )
+        if (equipamentoEncontrado.contains("site"))
         {
             std::cout
                 << "Site ID: "
@@ -192,9 +198,7 @@ int main()
         }
 
 
-        if (
-            equipamentoEncontrado.contains("area")
-        )
+        if (equipamentoEncontrado.contains("area"))
         {
             std::cout
                 << "Area ID: "
@@ -209,7 +213,6 @@ int main()
 
         json usuarios =
             obterUsuarios(token);
-
 
         if (usuarios.empty())
         {
@@ -230,12 +233,14 @@ int main()
 
 
         // ====================================================
-        // 8.
+        // 8. DESCRIÇÃO DA OCORRÊNCIA
         // ====================================================
-DadosOcorrencia dados;
 
-dados.descricao =
-    obterDescricaoOcorrencia();
+        DadosOcorrencia dados;
+
+        dados.descricao =
+            obterDescricaoOcorrencia();
+
 
         // ====================================================
         // 9. TIPO DA OCORRÊNCIA
@@ -243,7 +248,6 @@ dados.descricao =
 
         dados.tipoAnomalia =
             obterTipoOcorrencia();
-
 
         if (dados.tipoAnomalia == 0)
         {
@@ -255,11 +259,12 @@ dados.descricao =
         // 10. SOLICITANTE E EXECUTOR
         // ====================================================
 
-       dados.solicitanteId =
-    LEANKEEP_USUARIO_PADRAO;
+        dados.solicitanteId =
+            LEANKEEP_USUARIO_PADRAO;
 
-dados.executorId =
-    LEANKEEP_USUARIO_PADRAO;
+        dados.executorId =
+            LEANKEEP_USUARIO_PADRAO;
+
 
         // ====================================================
         // 11. TAG DO EQUIPAMENTO
@@ -304,14 +309,13 @@ dados.executorId =
         std::cout
             << "========================================\n\n";
 
-
         std::cout
             << ocorrencia.dump(4)
             << "\n";
 
 
         // ====================================================
-        // 14. ENVIA OCORRÊNCIA
+        // 14. ENVIA OCORRÊNCIA PARA O LEANKEEP
         // ====================================================
 
         std::cout
@@ -332,7 +336,7 @@ dados.executorId =
 
 
         // ====================================================
-        // 15. RESULTADO
+        // 15. RESULTADO E ENVIO PARA POWER AUTOMATE
         // ====================================================
 
         if (sucesso)
@@ -341,10 +345,105 @@ dados.executorId =
                 << "\n========================================\n";
 
             std::cout
-                << "PROCESSO CONCLUIDO COM SUCESSO\n";
+                << "OCORRENCIA CRIADA COM SUCESSO\n";
 
             std::cout
                 << "========================================\n";
+
+
+            // =================================================
+            // TÍTULO DO CARD
+            //
+            // O ASSUNTO DO E-MAIL SERÁ O TÍTULO DO PLANNER
+            // =================================================
+
+            std::string assunto =
+                dados.tagEquipamento +
+                " - Ocorrencia LeanKeep";
+
+
+            // =================================================
+            // DESCRIÇÃO DO CARD
+            //
+            // O CORPO DO E-MAIL SERÁ A DESCRIÇÃO/NOTAS
+            // =================================================
+
+            std::string corpo =
+                "Equipamento: " +
+                dados.tagEquipamento +
+                "\r\n\r\n"
+                "Descricao do ocorrido:\r\n" +
+                dados.descricao +
+                "\r\n\r\n"
+                "Tipo da ocorrencia: " +
+                std::to_string(dados.tipoAnomalia);
+
+
+            // =================================================
+            // CONTA MONITORADA PELO POWER AUTOMATE
+            // =================================================
+
+            std::string destinatario =
+                "willian.ribeiro09@outlook.com";
+
+
+            // =================================================
+            // ENVIA E-MAIL
+            // =================================================
+
+            std::cout
+                << "\n========================================\n";
+
+            std::cout
+                << "       ENVIANDO E-MAIL\n";
+
+            std::cout
+                << "========================================\n";
+
+
+            bool emailEnviado =
+                EnviarEmail(
+                    destinatario,
+                    assunto,
+                    corpo
+                );
+
+
+            // =================================================
+            // RESULTADO DO E-MAIL
+            // =================================================
+
+            if (emailEnviado)
+            {
+                std::cout
+                    << "\n========================================\n";
+
+                std::cout
+                    << "PROCESSO CONCLUIDO COM SUCESSO\n";
+
+                std::cout
+                    << "========================================\n";
+
+                std::cout
+                    << "LeanKeep: OK\n";
+
+                std::cout
+                    << "E-mail: OK\n";
+
+                std::cout
+                    << "Power Automate: aguardando processamento\n";
+
+                std::cout
+                    << "Planner: aguardando criacao do card\n";
+            }
+            else
+            {
+                std::cout
+                    << "\nOcorrencia criada no LeanKeep,\n";
+
+                std::cout
+                    << "mas o e-mail nao foi enviado.\n";
+            }
         }
         else
         {

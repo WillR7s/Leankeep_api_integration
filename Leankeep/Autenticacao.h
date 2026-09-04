@@ -7,6 +7,9 @@
 // AUTENTICAÇÃO LEANKEEP
 // ============================================================
 
-std::string obterToken();
+std::string obterToken(
+    const std::string& login,
+    const std::string& senha
+);
 
 #endif
