@@ -1,5 +1,6 @@
 #ifndef ENVIAR_EMAIL_H
 #define ENVIAR_EMAIL_H
+
 #include <string>
 
 bool EnviarEmail(

@@ -12,6 +12,7 @@
 #include "LeanKeep/Autenticacao.h"
 #include "LeanKeep/Equipamentos.h"
 #include "LeanKeep/Usuarios.h"
+#include "secret.h"
 
 #include "Interface/TipoOcorrencia.h"
 #include "Interface/EquipamentoMenu.h"
@@ -384,7 +385,7 @@ int main()
             // =================================================
 
             std::string destinatario =
-                "willian.ribeiro09@outlook.com";
+                getEmailDestino();
 
 
             // =================================================

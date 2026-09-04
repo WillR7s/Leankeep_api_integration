@@ -1,8 +1,11 @@
 #include "EnviarEmail.h"
+#include "../secret.h"
 
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <curl/curl.h>
+
 
 struct UploadStatus
 {
@@ -92,10 +95,10 @@ bool EnviarEmail(
     // ========================================================
 
     const std::string remetente =
-        "contratomstar@gmail.com";
+        getGmailRemetente();
 
     const std::string senha =
-        "ckah fhgj znfh sili";
+        getGmailPassword();
 
 
     const std::string smtp =
@@ -235,7 +238,8 @@ bool EnviarEmail(
 
     std::cout
         << "\nEnviando e-mail...\n";
-
+std::cout << "Remetente: " << remetente << "\n";
+std::cout << "Tamanho da senha: " << senha.size() << "\n";
     CURLcode resultado =
         curl_easy_perform(curl);
 
