@@ -1,0 +1,263 @@
+body{
+
+font-family:'Montserrat', sans-serif;
+margin:0;
+background-color: #0E121F;
+
+
+}
+
+header{
+background-color:#6E1A12
+;
+color:aliceblue;
+
+}
+.logo-controller{
+    width:70px;
+    object-fit: cover;
+}
+.logo-header{
+    width:236px;
+}
+
+.cabecalho{
+    margin-left:100px;
+    margin-right: 100px;
+    display:flex;
+    justify-content:space-between ;
+    align-items: center;
+}
+.cabecalho >p{
+    font-size:25px;
+    width:500px;
+
+}
+
+.descricao{
+    color:white;
+    
+    display:flex;
+    flex-direction:column;
+    justify-content: center;
+    align-items: center;
+    font-size:30px;
+    font-weight:900;
+    gap:0;
+   
+}
+.descricao1{
+    Margin-bottom:100px;
+
+}
+
+.logo-central{
+    padding:10px;
+    width:433px;
+}
+
+.Fluxo{
+    padding:20px;
+    width: 1214px;
+}
+.Titulo_fluxo{
+    margin-top: 70px;
+}
+
+a{
+    text-decoration:none;
+    color:white; 
+    font-size:22px;
+    font-weight: bolder;
+}
+
+.botao{
+   margin-top:60px;
+   height: 50px;
+    width: 260px;
+    background-color:#CF2504;
+    border-radius:20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+     margin-bottom:100px;
+}
+.botao:hover{
+      background-color: #6E1A12;
+    color:white;
+}
+
+.logo-rodape{
+    width:313px;
+    margin-left:20px;
+}
+footer{
+    background-color:#6E1A12;
+    color:white;
+    display:flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height:200px;
+    gap:30px;
+   
+    
+    
+}
+.rodape{
+    margin-top:10px;
+display: flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
+margin-left:30px;
+}
+
+/*----------- Login ------------------*/
+
+    .Login{
+        padding:20px;
+        background-color:#CFCFD5 ;
+        width:825px;
+        height:540px;        
+        border-radius: 10px;
+        display:flex;
+        flex-direction: column;
+        align-items: center;
+
+       
+    }
+.Login > p{
+    font-size:40px;
+    color:#6E1A12;
+    font-weight: bolder;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 115px;
+}
+
+.Usuario, .senha{
+    display: Flex;
+    justify-content: center;
+    gap:20px;
+    margin-bottom:60px;
+    margin-left:-60px;
+    
+}
+
+
+input{
+border-radius:10px;
+width:259px;
+height: 30px;
+border:1px solid #6E1A12;
+}
+
+label{
+    font-weight: bolder;
+    margin-top: 10px;
+}
+.botao-entrar{
+    background-color:#CF2504;
+    width:200px;
+    height:40px;
+    display:flex;
+    justify-content: center;
+    border-radius:20px;
+    align-items: center;
+    font-size: 15px;
+    margin-left:-10px;
+}
+.botao-entrar > a{
+    font-size: 15px;
+    font-weight: bolder;
+}
+#usuario, #senha{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.Login{
+
+}
+
+.Card-login{
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    padding:65px;
+
+}
+.botao-entrar:hover{
+      background-color: #6E1A12;
+    color:white;
+}
+
+textarea{
+    width:905px;
+    height:214px;
+    resize:none; /* impede que o usuário redimensione a caixa de texto */
+    border-radius: 10px;
+}
+
+.grupo1{
+    background-color: #CFCFD5;
+    width: 1182px;
+    height:817px;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+  
+}
+
+.seletores{
+    
+display:flex;
+justify-content: space-around;
+gap:236px;
+margin-top: -50px;
+    
+}
+.seletor1, .seletor2{
+display:flex;
+flex-direction: column;
+justify-content: space-between;
+gap:20px;
+
+}
+select{
+border-radius: 10px;
+width:279px;
+height: 38px;
+}
+
+.grupo1>p{
+ font-size:40px;
+    color:#6E1A12;
+    font-weight: bolder;
+    display:flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 115px;
+    padding:20px;
+}
+
+.Descricao{
+    display:flex;
+    flex-direction: column;
+    gap:20px;
+    margin-top:50px ;
+
+}
+.card-ocorrencia{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+   padding:50px;
+   margin-left:60px;
+}
