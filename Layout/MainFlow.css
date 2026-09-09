@@ -261,3 +261,36 @@ height: 38px;
    padding:50px;
    margin-left:60px;
 }
+.mensagem-sucesso {
+    display: none;
+    width: fit-content;
+    max-width: 90%;
+    margin: 20px auto 0;
+
+    padding: 14px 22px;
+
+    border-radius: 8px;
+
+    background-color: #d4edda;
+    color: #155724;
+
+    border: 1px solid #b7dfc1;
+
+    text-align: left;
+
+    box-sizing: border-box;
+}
+
+.mensagem-sucesso.mostrar {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.mensagem-sucesso strong {
+    font-size: 16px;
+}
+
+.mensagem-sucesso span {
+    font-size: 14px;
+}
