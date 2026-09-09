@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Criar Ocorrência</title>
     <link rel="stylesheet" href="MainFlow.css">
+    
 </head>
 <body>
      <header>
@@ -34,14 +35,29 @@
 </select>
 </div>
 <div class="seletor2">
-<label for="Tipo">Tipo de Ocorrência</label>
-<select name="tipo" id="TIPO">
-                        <option Selected disabled>Selecione um Tipo de ocorrência</option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
-                        <option></option>
+<div class="seletor2">
 
+    <label for="TIPO">Tipo de Ocorrência</label>
+
+    <select name="tipo" id="TIPO">
+
+        <option value="" selected disabled>
+            Selecione um Tipo de ocorrência
+        </option>
+
+        <option value="23">Melhoria</option>
+
+        <option value="21">Preventiva</option>
+
+        <option value="14">Anomalia Simples</option>
+
+        <option value="13">Anomalia Crítica</option>
+
+        <option value="19">Chamado</option>
+
+    </select>
+
+</div>
 </select>
 </div>
 </div>
@@ -67,6 +83,6 @@
         </div>
         <img class="logo-rodape" src="imgs/LOGO CONTROLLER.png" alt="">
     </footer>
-    
+      <script src="ocorrencia.js"></script>
 </body>
 </html>

@@ -4,6 +4,7 @@
 #include <nlohmann/json.hpp>
 
 #ifdef _WIN32
+#include <winsock2.h>
 #include <windows.h>
 #endif
 
@@ -20,8 +21,287 @@
 #include "Interface/EntradaOcorrencia.h"
 
 #include "Planner/EnviarEmail.h"
+#include "httplib.h"
 
 using json = nlohmann::json;
+
+
+// ============================================================
+// DADOS DA SESSÃO
+// ============================================================
+
+std::string tokenAtual;
+std::string equipamentosAtual;
+
+
+// ============================================================
+// INICIA SERVIDOR
+// ============================================================
+
+void iniciarServidor()
+{
+    httplib::Server servidor;
+
+
+    // ========================================================
+    // CORS
+    // ========================================================
+
+    servidor.set_default_headers({
+        {"Access-Control-Allow-Origin", "*"},
+        {"Access-Control-Allow-Methods", "GET, POST, OPTIONS"},
+        {"Access-Control-Allow-Headers", "Content-Type"}
+    });
+
+
+    // ========================================================
+    // RESPONDE REQUISIÇÕES OPTIONS
+    // ========================================================
+
+    servidor.Options(
+        R"(.*)",
+        [](const httplib::Request&, httplib::Response& res)
+        {
+            res.status = 204;
+        }
+    );
+
+
+    // ========================================================
+    // LOGIN
+    // ========================================================
+
+    servidor.Post(
+        "/api/login",
+
+        [](const httplib::Request& req,
+           httplib::Response& res)
+        {
+            try
+            {
+                // ------------------------------------------------
+                // Lê JSON enviado pelo navegador
+                // ------------------------------------------------
+
+                json dados =
+                    json::parse(req.body);
+
+
+                // ------------------------------------------------
+                // Verifica login e senha
+                // ------------------------------------------------
+
+                if (!dados.contains("login") ||
+                    !dados.contains("senha"))
+                {
+                    res.status = 400;
+
+                    res.set_content(
+                        R"({"sucesso":false,"erro":"Login e senha sao obrigatorios."})",
+                        "application/json"
+                    );
+
+                    return;
+                }
+
+
+                std::string login =
+                    dados["login"];
+
+                std::string senha =
+                    dados["senha"];
+
+
+                std::cout
+                    << "\nTentativa de login pelo MainFlow: "
+                    << login
+                    << "\n";
+
+
+                // ------------------------------------------------
+                // Autentica no LeanKeep
+                // ------------------------------------------------
+
+                std::string token =
+                    obterToken(
+                        login,
+                        senha
+                    );
+
+
+                // ------------------------------------------------
+                // Verifica autenticação
+                // ------------------------------------------------
+
+                if (token.empty())
+                {
+                    res.status = 401;
+
+                    res.set_content(
+                        R"({"sucesso":false,"erro":"Login ou senha invalidos."})",
+                        "application/json"
+                    );
+
+                    return;
+                }
+
+
+                // ------------------------------------------------
+                // Guarda o token da sessão
+                // ------------------------------------------------
+
+                tokenAtual =
+                    token;
+
+
+                // =================================================
+                // CARREGA EQUIPAMENTOS UMA ÚNICA VEZ
+                // =================================================
+
+                std::cout
+                    << "\nCarregando equipamentos...\n";
+
+
+                equipamentosAtual =
+                    obterEquipamentos(
+                        tokenAtual
+                    );
+
+
+                // ------------------------------------------------
+                // Verifica se conseguiu carregar
+                // ------------------------------------------------
+
+                if (equipamentosAtual.empty())
+                {
+                    tokenAtual.clear();
+
+                    res.status = 500;
+
+                    res.set_content(
+                        R"({"sucesso":false,"erro":"Login realizado, mas nao foi possivel carregar os equipamentos."})",
+                        "application/json"
+                    );
+
+                    return;
+                }
+
+
+                std::cout
+                    << "Equipamentos carregados com sucesso.\n";
+
+
+                // ------------------------------------------------
+                // Login concluído
+                // ------------------------------------------------
+
+                json resposta = {
+                    {"sucesso", true}
+                };
+
+
+                res.status = 200;
+
+                res.set_content(
+                    resposta.dump(),
+                    "application/json"
+                );
+            }
+
+            catch (const std::exception& erro)
+            {
+                res.status = 400;
+
+                json resposta = {
+                    {"sucesso", false},
+                    {"erro", erro.what()}
+                };
+
+                res.set_content(
+                    resposta.dump(),
+                    "application/json"
+                );
+            }
+        }
+    );
+
+
+    // ==========================================================
+    // EQUIPAMENTOS
+    // ==========================================================
+
+    servidor.Get(
+        "/api/equipamentos",
+
+        [](const httplib::Request& req,
+           httplib::Response& res)
+        {
+            // ------------------------------------------------
+            // Verifica autenticação
+            // ------------------------------------------------
+
+            if (tokenAtual.empty())
+            {
+                res.status = 401;
+
+                res.set_content(
+                    R"({"sucesso":false,"erro":"Usuario nao autenticado."})",
+                    "application/json"
+                );
+
+                return;
+            }
+
+
+            // ------------------------------------------------
+            // Verifica se os equipamentos foram carregados
+            // ------------------------------------------------
+
+            if (equipamentosAtual.empty())
+            {
+                res.status = 500;
+
+                res.set_content(
+                    R"({"sucesso":false,"erro":"Equipamentos ainda nao foram carregados."})",
+                    "application/json"
+                );
+
+                return;
+            }
+
+
+            // ------------------------------------------------
+            // Retorna o cache
+            // ------------------------------------------------
+
+            res.status = 200;
+
+            res.set_content(
+                equipamentosAtual,
+                "application/json"
+            );
+        }
+    );
+
+
+    // ==========================================================
+    // INICIA SERVIDOR
+    // ==========================================================
+
+    std::cout
+        << "\n========================================\n"
+        << "          MAIN FLOW API\n"
+        << "========================================\n"
+        << "Servidor iniciado em:\n"
+        << "http://localhost:8080\n"
+        << "========================================\n\n";
+
+
+    servidor.listen(
+        "0.0.0.0",
+        8080
+    );
+}
 
 
 // ============================================================
@@ -30,445 +310,16 @@ using json = nlohmann::json;
 
 int main()
 {
+
 #ifdef _WIN32
+
     SetConsoleCP(65001);
     SetConsoleOutputCP(65001);
+
 #endif
 
-    std::cout
-        << "=====================================\n";
 
-    std::cout
-        << "       INTEGRACAO COM LEANKEEP\n";
-
-    std::cout
-        << "=====================================\n\n";
-
-
-    // ========================================================
-    // 1. AUTENTICAÇÃO
-    // ========================================================
-
-    std::string login;
-    std::string senha;
-
-    std::cout << "\nLogin LeanKeep: ";
-    std::getline(std::cin, login);
-
-    std::cout << "Senha LeanKeep: ";
-    std::getline(std::cin, senha);
-
-    std::string token =
-        obterToken(login, senha);
-
-    if (token.empty())
-    {
-        std::cout
-            << "\nNao foi possivel obter o JWT.\n";
-
-        return 1;
-    }
-
-
-    // ========================================================
-    // 2. CONSULTA EQUIPAMENTOS
-    // ========================================================
-
-    std::string resposta =
-        obterEquipamentos(token);
-
-    if (resposta.empty())
-    {
-        std::cout
-            << "\nNao foi possivel obter os equipamentos.\n";
-
-        return 1;
-    }
-
-
-    // ========================================================
-    // 3. TRANSFORMA RESPOSTA EM JSON
-    // ========================================================
-
-    try
-    {
-        json equipamentos =
-            json::parse(resposta);
-
-        if (!equipamentos.is_array())
-        {
-            std::cout
-                << "Erro: a resposta nao e uma lista.\n";
-
-            return 1;
-        }
-
-        std::cout
-            << "\nJSON dos equipamentos recebido.\n";
-
-        std::cout
-            << "Quantidade de equipamentos: "
-            << equipamentos.size()
-            << "\n";
-
-
-        // ====================================================
-        // 4. ESCOLHA DO EQUIPAMENTO
-        // ====================================================
-
-        std::string identificadorEquipamento =
-            escolherEquipamento();
-
-        if (identificadorEquipamento.empty())
-        {
-            return 1;
-        }
-
-
-        // ====================================================
-        // 5. PROCURA EQUIPAMENTO NA API
-        // ====================================================
-
-        json equipamentoEncontrado =
-            encontrarEquipamento(
-                equipamentos,
-                identificadorEquipamento
-            );
-
-        if (equipamentoEncontrado.empty())
-        {
-            std::cout
-                << "\nEquipamento nao encontrado na API.\n";
-
-            std::cout
-                << "Identificador procurado: "
-                << identificadorEquipamento
-                << "\n";
-
-            return 1;
-        }
-
-
-        // ====================================================
-        // 6. MOSTRA EQUIPAMENTO SELECIONADO
-        // ====================================================
-
-        std::cout
-            << "\n=====================================\n";
-
-        std::cout
-            << "       EQUIPAMENTO SELECIONADO\n";
-
-        std::cout
-            << "=====================================\n";
-
-
-        if (equipamentoEncontrado.contains("equipamento"))
-        {
-            std::cout
-                << "ID: "
-                << equipamentoEncontrado["equipamento"]
-                << "\n";
-        }
-
-
-        if (equipamentoEncontrado.contains("nome"))
-        {
-            std::cout
-                << "Nome: "
-                << equipamentoEncontrado["nome"]
-                << "\n";
-        }
-
-
-        if (equipamentoEncontrado.contains("tag"))
-        {
-            std::cout
-                << "Tag: "
-                << equipamentoEncontrado["tag"]
-                << "\n";
-        }
-
-
-        if (equipamentoEncontrado.contains("site"))
-        {
-            std::cout
-                << "Site ID: "
-                << equipamentoEncontrado["site"]
-                << "\n";
-        }
-
-
-        if (equipamentoEncontrado.contains("area"))
-        {
-            std::cout
-                << "Area ID: "
-                << equipamentoEncontrado["area"]
-                << "\n";
-        }
-
-
-        // ====================================================
-        // 7. CONSULTA USUÁRIOS
-        // ====================================================
-
-        json usuarios =
-            obterUsuarios(token);
-
-        if (usuarios.empty())
-        {
-            std::cout
-                << "\nNao foi possivel obter os usuarios.\n";
-
-            return 1;
-        }
-
-
-        std::cout
-            << "\nUsuarios consultados com sucesso.\n";
-
-        std::cout
-            << "Quantidade de usuarios: "
-            << usuarios.size()
-            << "\n";
-
-
-        // ====================================================
-        // 8. DESCRIÇÃO DA OCORRÊNCIA
-        // ====================================================
-
-        DadosOcorrencia dados;
-
-        dados.descricao =
-            obterDescricaoOcorrencia();
-
-
-        // ====================================================
-        // 9. TIPO DA OCORRÊNCIA
-        // ====================================================
-
-        dados.tipoAnomalia =
-            obterTipoOcorrencia();
-
-        if (dados.tipoAnomalia == 0)
-        {
-            return 1;
-        }
-
-
-        // ====================================================
-        // 10. SOLICITANTE E EXECUTOR
-        // ====================================================
-
-        dados.solicitanteId =
-            LEANKEEP_USUARIO_PADRAO;
-
-        dados.executorId =
-            LEANKEEP_USUARIO_PADRAO;
-
-
-        // ====================================================
-        // 11. TAG DO EQUIPAMENTO
-        // ====================================================
-
-        if (
-            equipamentoEncontrado.contains("tag") &&
-            equipamentoEncontrado["tag"].is_string()
-        )
-        {
-            dados.tagEquipamento =
-                equipamentoEncontrado["tag"];
-        }
-        else
-        {
-            dados.tagEquipamento =
-                identificadorEquipamento;
-        }
-
-
-        // ====================================================
-        // 12. MONTA OCORRÊNCIA
-        // ====================================================
-
-        json ocorrencia =
-            montarOcorrencia(
-                equipamentoEncontrado,
-                dados
-            );
-
-
-        // ====================================================
-        // 13. MOSTRA JSON DA OCORRÊNCIA
-        // ====================================================
-
-        std::cout
-            << "\n========================================\n";
-
-        std::cout
-            << "       OCORRENCIA MONTADA\n";
-
-        std::cout
-            << "========================================\n\n";
-
-        std::cout
-            << ocorrencia.dump(4)
-            << "\n";
-
-
-        // ====================================================
-        // 14. ENVIA OCORRÊNCIA PARA O LEANKEEP
-        // ====================================================
-
-        std::cout
-            << "\n========================================\n";
-
-        std::cout
-            << "       ENVIANDO OCORRENCIA\n";
-
-        std::cout
-            << "========================================\n";
-
-
-        bool sucesso =
-            enviarOcorrencia(
-                token,
-                ocorrencia
-            );
-
-
-        // ====================================================
-        // 15. RESULTADO E ENVIO PARA POWER AUTOMATE
-        // ====================================================
-
-        if (sucesso)
-        {
-            std::cout
-                << "\n========================================\n";
-
-            std::cout
-                << "OCORRENCIA CRIADA COM SUCESSO\n";
-
-            std::cout
-                << "========================================\n";
-
-
-            // =================================================
-            // TÍTULO DO CARD
-            //
-            // O ASSUNTO DO E-MAIL SERÁ O TÍTULO DO PLANNER
-            // =================================================
-
-            std::string assunto =
-                dados.tagEquipamento +
-                " - Ocorrencia LeanKeep";
-
-
-            // =================================================
-            // DESCRIÇÃO DO CARD
-            //
-            // O CORPO DO E-MAIL SERÁ A DESCRIÇÃO/NOTAS
-            // =================================================
-
-            std::string corpo =
-                "Equipamento: " +
-                dados.tagEquipamento +
-                "\r\n\r\n"
-                "Descricao do ocorrido:\r\n" +
-                dados.descricao +
-                "\r\n\r\n"
-                "Tipo da ocorrencia: " +
-                std::to_string(dados.tipoAnomalia);
-
-
-            // =================================================
-            // CONTA MONITORADA PELO POWER AUTOMATE
-            // =================================================
-
-            std::string destinatario =
-                getEmailDestino();
-
-
-            // =================================================
-            // ENVIA E-MAIL
-            // =================================================
-
-            std::cout
-                << "\n========================================\n";
-
-            std::cout
-                << "       ENVIANDO E-MAIL\n";
-
-            std::cout
-                << "========================================\n";
-
-
-            bool emailEnviado =
-                EnviarEmail(
-                    destinatario,
-                    assunto,
-                    corpo
-                );
-
-
-            // =================================================
-            // RESULTADO DO E-MAIL
-            // =================================================
-
-            if (emailEnviado)
-            {
-                std::cout
-                    << "\n========================================\n";
-
-                std::cout
-                    << "PROCESSO CONCLUIDO COM SUCESSO\n";
-
-                std::cout
-                    << "========================================\n";
-
-                std::cout
-                    << "LeanKeep: OK\n";
-
-                std::cout
-                    << "E-mail: OK\n";
-
-                std::cout
-                    << "Power Automate: aguardando processamento\n";
-
-                std::cout
-                    << "Planner: aguardando criacao do card\n";
-            }
-            else
-            {
-                std::cout
-                    << "\nOcorrencia criada no LeanKeep,\n";
-
-                std::cout
-                    << "mas o e-mail nao foi enviado.\n";
-            }
-        }
-        else
-        {
-            std::cout
-                << "\n========================================\n";
-
-            std::cout
-                << "NAO FOI POSSIVEL CRIAR A OCORRENCIA\n";
-
-            std::cout
-                << "========================================\n";
-        }
-    }
-    catch (const json::parse_error& erro)
-    {
-        std::cout
-            << "\nErro ao interpretar JSON dos equipamentos.\n";
-
-        std::cout
-            << erro.what()
-            << "\n";
-
-        return 1;
-    }
+    iniciarServidor();
 
 
     return 0;
