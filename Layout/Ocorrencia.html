@@ -11,29 +11,22 @@
 </head>
 
 <body>
-
-    
-
-    <!-- ====================================================== -->
-    <!-- OCORRÊNCIA -->
-    <!-- ====================================================== -->
-
-    <section>
-
-        <div class="card-ocorrencia">
-
-            <div class="grupo1">
-
-                <p>Crie Sua Ocorrência</p>
-
-
-                <!-- ================================================== -->
-                <!-- SELETORES -->
-                <!-- ================================================== -->
+    <div class="tela-ocorrencia">
+        <section class="banner">
+            <div class="banner-esquerda">
+                <img src="imgs/Logo-Central.png" class="centro">
+                <p class="txt1">Integração entre sistemas</p>
+                <img src="imgs/Fluxo.png" alt="" class="fluxo">
+                <p class="txt2">Mais eficiência para sua operação.</p>
+        </section>
+        <div class="card1">
+            <section class="card-ocorrencia">
+                <div class="txtH">
+                    <h2>Criar Ocorrência</h2>
+                    <p>Preencha os dados para registrar uma nova ocorrência</p>
+                </div>
 
                 <div class="seletores">
-
-
                     <!-- EQUIPAMENTO -->
 
                     <div class="seletor1">
@@ -42,10 +35,7 @@
                             Equipamento
                         </label>
 
-                        <select
-                            name="Equipamento"
-                            id="Equipamento"
-                        >
+                        <select name="Equipamento" id="Equipamento">
 
                             <option selected disabled>
                                 Selecione um Equipamento
@@ -64,17 +54,10 @@
                             Tipo de Ocorrência
                         </label>
 
-                        <select
-                            name="tipo"
-                            id="TIPO"
-                        >
+                        <select name="tipo" id="TIPO">
 
-                            <option
-                                value=""
-                                selected
-                                disabled
-                            >
-                                Selecione um Tipo de ocorrência
+                            <option value="" selected disabled>
+                                Selecione um Tipo
                             </option>
 
                             <option value="23">
@@ -110,15 +93,11 @@
 
                 <div class="Descricao">
 
-                    <label for="mensagem">
+                    <label id="msg" for="mensagem">
                         Descreva a ocorrência
                     </label>
 
-                    <textarea
-                        id="mensagem"
-                        rows="4"
-                        placeholder="Digite a descrição da Ocorrência..."
-                    ></textarea>
+                    <textarea id="mensagem" rows="4" placeholder="Digite a descrição..."></textarea>
 
                 </div>
 
@@ -129,11 +108,8 @@
 
                 <nav class="botao">
 
-                    <button
-                        type="button"
-                        id="criarOcorrencia"
-                    >
-                        Criar Ocorrência
+                    <button type="button" id="criarOcorrencia">
+                        Criar
                     </button>
 
                 </nav>
@@ -143,29 +119,12 @@
                 <!-- MENSAGEM DE SUCESSO -->
                 <!-- ================================================== -->
 
-                <div
-                    id="mensagemSucesso"
-                    class="mensagem-sucesso"
-                ></div>
+                <div id="mensagemSucesso" class="mensagem-sucesso"></div>
 
-            </div>
-
+            </section>
         </div>
-
-    </section>
-
-
-    <!-- ====================================================== -->
-    <!-- RODAPÉ -->
-    <!-- ====================================================== -->
-
-
-    <!-- ====================================================== -->
-    <!-- JAVASCRIPT -->
-    <!-- ====================================================== -->
-
+    </div>
     <script src="ocorrencia.js"></script>
-
 </body>
 
 </html>
