@@ -7,40 +7,46 @@
     <link rel="stylesheet" href="MainFlow.css">
 </head>
 <body>
-    <header>
-<div class="cabecalho">
-<img class="logo-header" src="imgs/Logo-Header.png" alt="Logo cabeçalho">
-<p>Integração entre sistemas</p>
-<img class="logo-controller" src="imgs/logo_corrigida.svg" alt="">
-</div>
-    </header>
-<section class="Card-login" >
+    <section class="Tela">
+<div class="banner-esquerda">
+<img src="imgs/Logo-Central.png" class="centro">
+<p class="txt1">Integração entre sistemas</p>
+<img src="imgs/Fluxo.png" alt="" class="fluxo">
+<p class="txt2">Mais eficiência para sua operação.</p>
 
-    <div class="Login">
-        <p>Entre com a conta do Leankeep</p>
+</div>
+    
+        <div class="coluna2">
+            <div class="cabecalho-card">
+            <h1>Acesse sua conta</h1>
+            <h3>Entre para continuar no MainFlow</h3>
+            </div>
 <div class="Usuario">
     <label for="login">Login:</label>
+    <div class="usuario1">
     <input type="text" id="usuario" placeholder="Digite seu usuario Leankeep">
+    </div>
     </div>
 <div class="senha">
     <label for="senha">Senha:</label>
 <input type="password" id="senha" placeholder="Digite sua senha">
 </div>
+
+<div class="lembrar">
+    <input type="checkbox" id="lembrarMe">
+    <label for="lembrarMe">Lembrar-se de mim</label>
+</div>
+<div id="mensagemErro" class="mensagem-erro"></div>
+
 <nav class="botao-entrar">
     <button type="button" id="btnEntrar">Entrar</button>
 </nav>
 
+
+
 </div>
 
 </section>
- <footer>
-        <div class="rodape">
-            <p>Projeto desenvolvido pela equipe Maternidade S.Luiz Star</p>
-            <p>©2026</p>
-            
-        </div>
-        <img class="logo-rodape" src="imgs/LOGO CONTROLLER.png" alt="">
-    </footer>
 
 
 <script src="login.js"></script>
