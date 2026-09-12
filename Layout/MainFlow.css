@@ -1,108 +1,117 @@
-body{
+body {
 
-font-family:'Montserrat', sans-serif;
-margin:0;
-background-color: #0E121F;
- overflow-x: hidden;
+    font-family: 'Montserrat', sans-serif;
+    margin: 0;
+    background-color: #0E121F;
+    overflow-x: hidden;
 }
 
 /*----------- Login ------------------*/
-.centro{
-    width:500px;
-    height:270px;
+.centro {
+    width: 500px;
+    height: 270px;
     object-fit: cover;
 }
-.fluxo{
-    width:540px;
+
+.fluxo {
+    width: 540px;
     height: 270px;
 }
 
-.Tela{
-    display:grid;
+.Tela {
+    display: grid;
     grid-template-columns: repeat(2, 1fr);
-   align-items: center;
+    align-items: center;
 }
-.txt1{
-    color:#CFCFD5;
-    font-size:40px;
+
+.txt1 {
+    color: #CFCFD5;
+    font-size: 40px;
 }
-.txt2{
-    color:#CFCFD5;
-     font-size:25px;
+
+.txt2 {
+    color: #CFCFD5;
+    font-size: 25px;
 }
-.banner-esquerda{
+
+.banner-esquerda {
     background-image: url(imgs/banner.png);
     object-fit: cover;
-    width:672px;
-    height:897px;
-    display:flex;
+    width: 672px;
+    height: 897px;
+    display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: space-evenly;
-    margin:0;
-      animation: entrarEsquerda 2s ease-out forwards;
+    margin: 0;
+    animation: entrarEsquerda 2s ease-out forwards;
 }
-.coluna2{
+
+.coluna2 {
     background-color: rgba(255, 0, 0, 0.1);
     width: 800px;
     height: 800px;
-    display:flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
     border-radius: 20px;
-    display:flex;
+    display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;  
-    margin-left:-30px;
+    justify-content: space-around;
+    margin-left: -30px;
     animation: entrarDireita 3s ease-out 0.15s forwards;
 }
 
-label{
-    color:#CFCFD5;
-    Font-size:25px;
+label {
+    color: #CFCFD5;
+    Font-size: 25px;
     font-weight: bold;
-     margin-bottom: 20px;
+    margin-bottom: 20px;
 }
-.Usuario,.senha{
-   
-    display:flex;
+
+.Usuario,
+.senha {
+
+    display: flex;
     flex-direction: column;
 }
 
-input{
-    width:380px;
-    height:45px;
+input {
+    width: 380px;
+    height: 45px;
     background-color: #CFCFD5;
     border-radius: 10px;
-    border:none;
-    font-size: 20px;  
+    border: none;
+    font-size: 20px;
 }
-.cabecalho-card{
-    color:#CFCFD5;
-    margin-left:-200px;
+
+.cabecalho-card {
+    color: #CFCFD5;
+    margin-left: -200px;
 }
-#btnEntrar{
-    width:205px;
-    height:54px;
-    border-radius:10px;
-    font-size:30px;
-    font-weight:bold;
+
+#btnEntrar {
+    width: 205px;
+    height: 54px;
+    border-radius: 10px;
+    font-size: 30px;
+    font-weight: bold;
     background-color: #CF2504;
-    color:#CFCFD5;
-    border:none;
+    color: #CFCFD5;
+    border: none;
     margin-bottom: 50px;
     cursor: pointer;
 }
 
 .lembrar {
-  margin-left:-200px;
-  margin-top:-50px;
-  
+    margin-left: -200px;
+    margin-top: -50px;
+
 }
 
-#btnEntrar:hover{
-    background-color:#6E1A12;
+#btnEntrar:hover {
+    background-color: #6E1A12;
 }
 
 .lembrar input {
@@ -110,6 +119,7 @@ input{
     height: 16px;
     cursor: pointer;
 }
+
 .lembrar label {
     font-size: 15px;
     cursor: pointer;
@@ -215,16 +225,17 @@ input{
 
 /*------------------Ocorrência------------------------------------------*/
 
-textarea{
+textarea {
     width: 850px;
-    height:240px;
-    resize:none; /* impede que o usuário redimensione a caixa de texto */
+    height: 240px;
+    resize: none;
+    /* impede que o usuário redimensione a caixa de texto */
     border-radius: 10px;
-    font-size:17px;
-    padding:20px;
+    font-size: 17px;
+    padding: 20px;
 }
 
-.seletores{
+.seletores {
     display: flex;
     justify-content: space-around;
     align-items: center;
@@ -232,88 +243,159 @@ textarea{
     margin-bottom: 60px
 }
 
-label{
+label {
     display: flex;
-    font-size:20px;
-   
+    font-size: 20px;
+
 }
 
-#Equipamento{
-    width:350px;
-    height:50px;
-    border:none;
-    border-radius:10px;
-    padding:0 20px;
-    font-size:1em;
-    outline:none;
+#Equipamento {
+    width: 350px;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-size: 1em;
+    outline: none;
     margin-left: -30px;
 }
 
-#TIPO{
-     width:350px;
-    height:50px;
-    border:none;
-    border-radius:10px;
-    padding:0 20px;
-    font-size:1em;
-    outline:none;
+#TIPO {
+    width: 350px;
+    height: 50px;
+    border: none;
+    border-radius: 10px;
+    padding: 0 20px;
+    font-size: 1em;
+    outline: none;
 }
 
-.txtH{
-    color:white;
-    display:flex;
+.txtH {
+    color: white;
+    display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center; 
+    align-items: center;
     margin-bottom: 50px
 }
-.txtH h2{
+
+.txtH h2 {
     font-size: 35px
 }
 
-.Descricao{
-    display:flex;
+.Descricao {
+    display: flex;
     flex-direction: column;
     align-items: center;
     margin-bottom: 50px;
 
 }
 
-button{
-    width:200px;
-    height:54px;
-    border-radius:10px;
-    Background-color:#CF2504;
-    color:white;
-    border:none;
-    font-size:30px;
+button {
+    width: 200px;
+    height: 54px;
+    border-radius: 10px;
+    Background-color: #CF2504;
+    color: white;
+    border: none;
+    font-size: 30px;
     font-weight: bolder;
-    cursor:pointer;
+    cursor: pointer;
     margin-bottom: 50px;
 
 }
 
-.card-ocorrencia{
-     background-color: rgba(255, 0, 0, 0.1);
-     display:flex;
-     flex-direction: column;
-     justify-content: space-around;
-     align-items: center;
-     width:1000px;
-     height:850px;
-     border-radius: 20px;
-}
-
-.tela-ocorrencia{
-    display: grid;
-    grid-template-columns: repeat(2,1fr);
+.card-ocorrencia {
+    background-color: rgba(255, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
     align-items: center;
-    
+    width: 1000px;
+    height: 850px;
+    border-radius: 20px;
 }
 
-.card1{
-    display:flex;
+.tela-ocorrencia {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    align-items: center;
+
+}
+
+.card1 {
+    display: flex;
     align-items: center;
     justify-content: center;
-    padding:30px 130px;
+    padding: 30px 130px;
+}
+
+@media (max-width:1400px) {
+
+
+
+
+    .banner-esquerda {
+        width: 593px;
+        height: 604px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: space-evenly;
+        margin: 0;
+    }
+    
+
+
+
+    .Tela {
+        display: grid;
+        grid-template-columns: repeat(2,1fr);
+        align-items: start;
+    }
+
+
+    .txt1 {
+        font-size: 2em;
+    }
+
+    .txt2 {
+        font-size: 1.5em;
+        ;
+    }
+
+    .fluxo {
+        width: 361px;
+        height: 181px;
+    }
+
+    .centro {
+        width: 367px;
+        height: 184px;
+    }
+
+
+
+
+    .coluna2 {
+    background-color: rgba(255, 0, 0, 0.1);
+    width: 619px;
+    height: 499px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-radius: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    margin-left: -30px;
+    animation: entrarDireita 3s ease-out 0.15s forwards;
+}
+
+.lembrar {
+    margin-left: -200px;
+    margin-top: 10px;
+}
+
 }
