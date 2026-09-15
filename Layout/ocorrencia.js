@@ -379,6 +379,7 @@ botao.addEventListener(
                     mensagemSucesso.classList.remove("mostrar");
 
                 }, 4000);
+                console.log(mensagemSucesso);
             }
 
             // --------------------------------------------------

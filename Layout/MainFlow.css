@@ -137,6 +137,11 @@ input {
 
     margin-top: -20px;
 }
+mensagem-sucesso{
+  color:  #CFCFD5;
+   font-size: 14px;
+    font-weight: bold;
+}
 
 /* =========================================================
    ANIMAÇÃO DO BANNER
