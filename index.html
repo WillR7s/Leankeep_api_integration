@@ -2,8 +2,60 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="refresh" content="0; url=Layout/Home.html">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>MainFlow</title>
+
+    <link rel="stylesheet" href="Layout/home.css">
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
+
 <body>
+
+    <div class="informacoes">
+
+        <img
+            class="logo-central"
+            src="Layout/imgs/Logo-Central.png"
+            alt="MainFlow"
+        >
+
+        <p>Gestão de Manutenção</p>
+
+        <div class="botao">
+
+            <button class="acesso" onclick="iniciarMainFlow()">
+
+                <i class="fa-solid fa-arrow-right-long"></i>
+
+                Acessar
+
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <script>
+
+        function iniciarMainFlow() {
+
+            // Inicia o MainFlow através do protocolo registrado no Windows
+            window.location.href = "mainflow://iniciar";
+
+            // Depois direciona para o login
+            setTimeout(function() {
+
+                window.location.href = "Layout/login.html";
+
+            }, 1500);
+
+        }
+
+    </script>
+
 </body>
 </html>
