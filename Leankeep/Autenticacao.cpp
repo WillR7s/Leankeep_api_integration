@@ -98,12 +98,11 @@ std::string obterToken(
         &resposta
     );
     
-    curl_easy_setopt(
+   curl_easy_setopt(
     curl,
     CURLOPT_CAINFO,
     "C:\\msys64\\ucrt64\\etc\\pki\\ca-trust\\extracted\\pem\\tls-ca-bundle.pem"
 );
-
     CURLcode resultado = curl_easy_perform(curl);
 
     if (resultado != CURLE_OK)

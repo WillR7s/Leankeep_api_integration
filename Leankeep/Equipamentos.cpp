@@ -115,6 +115,17 @@ std::string obterEquipamentos(
 
 
     // --------------------------------------------------------
+    // SSL
+    // --------------------------------------------------------
+
+    curl_easy_setopt(
+        curl,
+        CURLOPT_CAINFO,
+        "C:\\msys64\\ucrt64\\etc\\pki\\ca-trust\\extracted\\pem\\tls-ca-bundle.pem"
+    );
+
+
+    // --------------------------------------------------------
     // Executa consulta
     // --------------------------------------------------------
 
@@ -215,7 +226,6 @@ static void substituir(
 
 // ============================================================
 // FUNÇÃO: normalizarTexto
-//
 // Remove acentos e converte para minúsculas.
 // ============================================================
 
