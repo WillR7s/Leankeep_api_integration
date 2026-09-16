@@ -2,127 +2,108 @@ body {
 
     font-family: 'Montserrat', sans-serif;
     margin: 0;
-    background-color: #0E121F;
     overflow-x: hidden;
+
+    background-image:
+    linear-gradient(
+      rgba(0, 0, 0, 0.40),
+      rgba(0, 0, 0, 0.40)
+    ),
+    url("imgs/Maior.png");
+
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
 }
 
 /*----------- Login ------------------*/
-.centro {
-    width: 500px;
-    height: 270px;
-    object-fit: cover;
-}
-
-.fluxo {
-    width: 540px;
-    height: 270px;
-}
-
-.Tela {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    align-items: center;
-}
-
-.txt1 {
-    color: #CFCFD5;
-    font-size: 40px;
-}
-
-.txt2 {
-    color: #CFCFD5;
-    font-size: 25px;
-}
-
-.banner-esquerda {
-    background-image: url(imgs/banner.png);
-    object-fit: cover;
-    width: 672px;
-    height: 897px;
-    display: flex;
+section{
+    display:flex;
     flex-direction: column;
+    
     align-items: center;
-    justify-content: space-evenly;
-    margin: 0;
-    animation: entrarEsquerda 2s ease-out forwards;
 }
+.logo-central {
+  width: 230px;
+  height: 180px;
+  object-fit: cover;
+}
+.logo{
+ color:#F0F2F6;  
+ font-weight: bold;
+ font-size: 15px; 
+ display:flex;
+ flex-direction: column;
+ justify-content: space-around;
+ align-items: center;
 
-.coluna2 {
-    background-color: rgba(255, 0, 0, 0.1);
-    width: 800px;
-    height: 800px;
-    display: flex;
+}
+.card-principal{
+     width: 464px;
+     height:588px;
+    padding: 40px 28px;
+    background: rgba(17, 27, 38, 0.50);
+    border: 1px solid rgba(120, 150, 175, 0.35);
+    border-radius: 12px;
+    backdrop-filter: blur(5px);
+    box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.35),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04);
+       
+    color: #f0f2f6;
+    display:flex;
     flex-direction: column;
-    align-items: center;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: space-around;
-    margin-left: -30px;
-    animation: entrarDireita 3s ease-out 0.15s forwards;
+    align-items: center;
+    gap:10px;
+    margin-top:120px;
+animation: entrarDireita 3s ease-out 0.15s forwards;
+}
+h1{
+  font-size:30px;
 }
 
-label {
-    color: #CFCFD5;
-    Font-size: 25px;
-    font-weight: bold;
-    margin-bottom: 20px;
+h3{
+    font-size:15px;
+}
+.Usuario , .senha{
+    width:341px;
+    height:52px;
+    border-radius:10px;
+    box-sizing: border-box;
+    border: 1px solid #405468;
+        background: rgba(45, 60, 76, 0.75);
+    border: 1px solid rgba(100, 125, 150, 0.35);
+    color: #F0F2F6;
+     display: flex;
+     justify-content: space-around;
+     align-items: center;
+
+}
+#usuario , #senha{
+    background-color: transparent;
+    border:none;
+    color:white;
+    font-size:20px;
+    width:270px;
+    height:49px;
+    outline: none;
+    
 }
 
-.Usuario,
-.senha {
-
-    display: flex;
-    flex-direction: column;
-}
-
-input {
-    width: 380px;
-    height: 45px;
-    background-color: #CFCFD5;
-    border-radius: 10px;
-    border: none;
+#btnEntrar{
+     width:341px;
+    height:52px;
     font-size: 20px;
-}
-
-.cabecalho-card {
-    color: #CFCFD5;
-    margin-left: -200px;
-}
-
-#btnEntrar {
-    width: 205px;
-    height: 54px;
+    color:white;
+    background-color:#1877FB ;
     border-radius: 10px;
-    font-size: 30px;
-    font-weight: bold;
-    background-color: #CF2504;
-    color: #CFCFD5;
-    border: none;
-    margin-bottom: 50px;
-    cursor: pointer;
+    border:none;
+    cursor:pointer;
 }
-
-.lembrar {
-    margin-left: -200px;
-    margin-top: -50px;
-
-}
-
-#btnEntrar:hover {
-    background-color: #6E1A12;
-}
-
-.lembrar input {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
-.lembrar label {
-    font-size: 15px;
-    cursor: pointer;
+#btnEntrar:hover{
+    background-color:#17488C ;
 }
 
 .mensagem-erro {
@@ -142,7 +123,12 @@ mensagem-sucesso{
    font-size: 14px;
     font-weight: bold;
 }
-
+.lembrar{
+    display:flex;
+    justify-content: space-around;
+    gap: 15px;
+    margin-top:10px;
+}
 /* =========================================================
    ANIMAÇÃO DO BANNER
    ========================================================= */
@@ -296,19 +282,7 @@ label {
 
 }
 
-button {
-    width: 200px;
-    height: 54px;
-    border-radius: 10px;
-    Background-color: #CF2504;
-    color: white;
-    border: none;
-    font-size: 30px;
-    font-weight: bolder;
-    cursor: pointer;
-    margin-bottom: 50px;
 
-}
 
 .card-ocorrencia {
     background-color: rgba(255, 0, 0, 0.1);
@@ -333,74 +307,4 @@ button {
     align-items: center;
     justify-content: center;
     padding: 30px 130px;
-}
-
-@media (max-width:1400px) {
-
-
-
-
-    .banner-esquerda {
-        width: 593px;
-        height: 604px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-evenly;
-        margin: 0;
-    }
-    
-
-
-
-    .Tela {
-        display: grid;
-        grid-template-columns: repeat(2,1fr);
-        align-items: start;
-    }
-
-
-    .txt1 {
-        font-size: 2em;
-    }
-
-    .txt2 {
-        font-size: 1.5em;
-        ;
-    }
-
-    .fluxo {
-        width: 361px;
-        height: 181px;
-    }
-
-    .centro {
-        width: 367px;
-        height: 184px;
-    }
-
-
-
-
-    .coluna2 {
-    background-color: rgba(255, 0, 0, 0.1);
-    width: 619px;
-    height: 499px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border-radius: 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-around;
-    margin-left: -30px;
-    animation: entrarDireita 3s ease-out 0.15s forwards;
-}
-
-.lembrar {
-    margin-left: -200px;
-    margin-top: 10px;
-}
-
 }

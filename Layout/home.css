@@ -1,12 +1,24 @@
+html,
 body {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 
   background-image:
-    linear-gradient(rgba(0, 0, 0, 0.40), rgba(0, 0, 0, 0.40)),
-    url(imgs/home-fundo-imagem\ maior.png);
-  background-size: cover;
-  background-repeat: no-repeat;
+    linear-gradient(
+      rgba(0, 0, 0, 0.40),
+      rgba(0, 0, 0, 0.40)
+    ),
+    url("imgs/Maior.png");
 
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  min-height: 100vh;
 }
+
 
 .logo-central {
   width: 500px;
@@ -14,61 +26,80 @@ body {
   object-fit: cover;
 }
 
+
 .informacoes {
   color: white;
   font-weight: bold;
   font-size: 30px;
+
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: space-around;
+
   margin-top: 150px;
+
   animation: entrarEsquerda 3s ease-out 0.15s forwards;
+  
 }
+
 
 .acesso {
   width: fit-content;
   height: fit-content;
+
   font-size: 30px;
   font-weight: bold;
+
   color: white;
   border: none;
   background-color: transparent;
+
   cursor: pointer;
 }
 
+
 .botao {
   background-color: #0089FD;
+
   width: 335px;
   height: 60px;
+
   border-radius: 20px;
+
   display: flex;
   align-items: center;
   justify-content: space-around;
+
   cursor: pointer;
   margin-top: 50px;
 }
+
 
 .botao:hover {
   background-color: #073C69;
 }
 
-@media(max-width:1400px) {
+
+@media(max-width: 1400px) {
+
   .informacoes {
     margin-top: -20px;
   }
+
 }
 
 
 @keyframes entrarEsquerda {
 
-    from {
-        opacity: 0;
-        transform: translateX(-220px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
+  from {
+    opacity: 0;
+    transform: translateX(-220px);
   }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+}

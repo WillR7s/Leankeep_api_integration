@@ -6,47 +6,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
     <link rel="stylesheet" href="MainFlow.css">
+    
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
 </head>
 
 <body>
-    <section class="Tela">
-        <div class="banner-esquerda">
-            <img src="imgs/Logo-Central.png" class="centro">
-            <p class="txt1">Integração entre sistemas</p>
-            <img src="imgs/Fluxo.png" alt="" class="fluxo">
-            <p class="txt2">Mais eficiência para sua operação.</p>
+    <section>
 
+   
+    <div class="card-principal">
+
+        <div class="logo">
+        <img class="logo-central" src="imgs/Logo-Central.png" alt="MainFlow">
+        <p>Gestão de Manutenção</p>
         </div>
 
-        <div class="coluna2">
-            <div class="cabecalho-card">
-                <h1>Acesse sua conta</h1>
-                <h3>Entre para continuar no MainFlow</h3>
-            </div>
-            <div class="Usuario">
-                <label for="login">Login:</label>
-                <div class="usuario1">
-                    <input type="text" id="usuario" placeholder="Digite seu usuario Leankeep">
-                </div>
-            </div>
-            <div class="senha">
-                <label for="senha">Senha:</label>
-                <input type="password" id="senha" placeholder="Digite sua senha">
-            </div>
-
-            <div class="lembrar">
-                <input type="checkbox" id="lembrarMe">
-                <label for="lembrarMe">Lembrar-se de mim</label>
-            </div>
-            <div id="mensagemErro" class="mensagem-erro"></div>
-
-            <nav class="botao-entrar">
-                <button type="button" id="btnEntrar">Entrar</button>
-            </nav>
-
-
-
+        
+            <h1>Login</h1>
+            <h3>Acesse sua conta para continuar</h3>
+     
+        <div class="Usuario">
+            <i class="fa-regular fa-user"></i>
+                <input type="text" id="usuario" placeholder="Digite seu usuario Leankeep"  autocomplete="off">
+               
         </div>
+        <div class="senha">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" id="senha" placeholder="Digite sua senha">
+        </div>
+
+        <nav class="botao-entrar">
+            <button type="button" id="btnEntrar">Entrar</button>
+        </nav>
+
+        <div class="lembrar">
+            <input type="checkbox" id="lembrarMe">
+            <label for="lembrarMe">Lembrar-se de mim</label>
+        </div>
+        <div id="mensagemErro" class="mensagem-erro"></div>
+    </div>
+
+
+
 
     </section>
 
