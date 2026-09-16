@@ -11,8 +11,7 @@ const mensagemErro = document.getElementById("mensagemErro");
 // CARREGAR USUÁRIO LEMBRADO
 // ============================================================
 
-const usuarioSalvo =
-    localStorage.getItem("mainflow_usuario");
+const usuarioSalvo = localStorage.getItem("mainflow_usuario");
 
 if (usuarioSalvo) {
 
@@ -29,15 +28,12 @@ if (usuarioSalvo) {
 
 btnEntrar.addEventListener("click", async () => {
 
-    const login =
-        campoUsuario.value.trim();
-
-    const senha =
-        campoSenha.value;
+    const login = campoUsuario.value.trim();
+    const senha = campoSenha.value;
 
 
     // --------------------------------------------------------
-    // LIMPA MENSAGEM DE ERRO ANTERIOR
+    // LIMPA MENSAGEM DE ERRO
     // --------------------------------------------------------
 
     mensagemErro.textContent = "";
@@ -82,8 +78,7 @@ btnEntrar.addEventListener("click", async () => {
 
     btnEntrar.disabled = true;
 
-    btnEntrar.textContent =
-        "Entrando...";
+    btnEntrar.textContent = "Entrando...";
 
 
     // --------------------------------------------------------
@@ -92,34 +87,25 @@ btnEntrar.addEventListener("click", async () => {
 
     try {
 
-        const resposta =
-            await fetch(
-                "http://localhost:8080/api/login",
-                {
-                    method: "POST",
+        const resposta = await fetch(
+            "http://localhost:8080/api/login",
+            {
+                method: "POST",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body: JSON.stringify({
-
-                        login: login,
-
-                        senha: senha
-
-                    })
-                }
-            );
-
-
-        const dados =
-            await resposta.json();
+                body: JSON.stringify({
+                    login: login,
+                    senha: senha
+                })
+            }
+        );
 
 
         // ----------------------------------------------------
-        // LOGIN INCORRETO
+        // VERIFICA SE O SERVIDOR RESPONDEU
         // ----------------------------------------------------
 
         if (!resposta.ok) {
@@ -132,34 +118,86 @@ btnEntrar.addEventListener("click", async () => {
 
 
         // ----------------------------------------------------
+        // CONVERTE RESPOSTA PARA JSON
+        // ----------------------------------------------------
+
+        const dados = await resposta.json();
+
+        console.log("Resposta do MainFlow:", dados);
+
+
+        // ----------------------------------------------------
         // LOGIN REALIZADO COM SUCESSO
         // ----------------------------------------------------
 
-        if (dados.sucesso) {
+        if (dados.sucesso === true) {
 
-    // Inicia a animação de saída
-    document.querySelector(".Tela").classList.add("saindo");
+            // Mensagem opcional no console
+            console.log("Login realizado com sucesso.");
 
-    // Aguarda a animação terminar
-    setTimeout(() => {
-        window.location.href = "Ocorrencia.html";
-    }, 700);
-}
+
+            // ------------------------------------------------
+            // ANIMAÇÃO DE SAÍDA
+            // ------------------------------------------------
+
+            const tela = document.querySelector(".Tela");
+
+            if (tela) {
+                tela.classList.add("saindo");
+            }
+
+
+            // ------------------------------------------------
+            // VAI PARA A TELA DE OCORRÊNCIAS
+            // ------------------------------------------------
+
+            setTimeout(() => {
+
+                window.location.href = "Ocorrencia.html";
+
+            }, 700);
+
+
+            return;
+        }
+
+
+        // ----------------------------------------------------
+        // CASO O MAINFlow RESPONDA SEM SUCESSO
+        // ----------------------------------------------------
+
+        mensagemErro.textContent =
+            "⚠ Usuário ou senha incorretos.";
+
     }
+
+
+    // ========================================================
+    // ERRO DE CONEXÃO
+    // ========================================================
+
     catch (erro) {
 
-        console.error(erro);
+        console.error(
+            "Erro ao conectar ao MainFlow:",
+            erro
+        );
 
         mensagemErro.textContent =
             "⚠ Não foi possível conectar ao servidor do MainFlow.";
 
     }
+
+
+    // ========================================================
+    // RESTAURA BOTÃO
+    // ========================================================
+
     finally {
 
         btnEntrar.disabled = false;
 
-        btnEntrar.textContent =
-            "Entrar";
+        btnEntrar.textContent = "Entrar";
 
     }
 
